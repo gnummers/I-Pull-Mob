@@ -59,6 +59,9 @@ The addon ships with starter modules:
 - `pull-timers` - a simple pull countdown module
 - `reminder-popups` - generic pre-pull or mid-raid reminder prompts
 - `taunt-alerter` - generic tank swap reminders
+- `ssc-core-runners` - Tainted Core handoff reminders for Lady Vashj
+- `tk-assignment-helper` - assignment and marker reminders for Tempest Keep fights
+- `raid-movement` - spread, stack, and reposition reminders
 - `ssc-hydross` - Hydross the Unstable
 - `ssc-lurker` - The Lurker Below
 - `ssc-leotheras` - Leotheras the Blind
@@ -82,7 +85,8 @@ Each raid module can define:
 - `name` and `description`
 - `cycles` for initial interrupt assignments
 - `timeline` entries with `after`, `label`, `prompt`, `announce`, `sound`, `interruptCycle`, `repeatCount`, `every`, and `until`
-- optional hooks like `onStart`, `onSchedule`, `onEvent`
+- `combatLogTriggers` entries for cast-start and aura-based prompts that should fire from actual combat log events
+- optional hooks like `onStart`, `onSchedule`, `onEvent`, and `onCombatLog`
 
 That makes the addon suitable for converting WeakAura-style raid logic into a standalone raid assistant.
 

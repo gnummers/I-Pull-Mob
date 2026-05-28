@@ -9,6 +9,10 @@ IPM:RegisterModule("tk-kaelthas", {
 	cycles = {
 		kick = {},
 	},
+	combatLogTriggers = {
+		{ event = "SPELL_SUMMON", spellName = "Phoenix", prompt = "Phoenix add spawned - swap and burn it down.", sound = true },
+		{ event = "SPELL_CAST_START", spellName = "Pyroblast", prompt = "Kick the next dangerous cast.", interruptCycle = "kick", sound = true },
+	},
 	timeline = {
 		{ after = 5, label = "Advisor pull", prompt = "Pull the advisors cleanly and keep them separated.", sound = true },
 		{ after = 35, label = "Advisor control", prompt = "Advisor control check - maintain target assignments and CC.", sound = true, repeatCount = 3, every = 45, ["until"] = 125 },
@@ -16,6 +20,5 @@ IPM:RegisterModule("tk-kaelthas", {
 		{ after = 160, label = "Weapon cleanup", prompt = "Weapon cleanup - keep assigned targets on their weapon.", sound = true },
 		{ after = 225, label = "Phase 3", prompt = "Phase 3 - reset for phoenix and gravity / fire handling.", announce = "Phase 3", sound = true },
 		{ after = 300, label = "Final phase", prompt = "Final phase - burn the boss and prepare to interrupt the dangerous casts.", sound = true },
-		{ after = 320, label = "Interrupt check", prompt = "Kick the next dangerous cast.", interruptCycle = "kick", sound = true, repeatCount = 6, every = 20, ["until"] = 420 },
 	},
 })

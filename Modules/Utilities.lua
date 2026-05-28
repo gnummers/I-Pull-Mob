@@ -69,3 +69,37 @@ IPM:RegisterModule("mana-reminders", {
 		{ after = 150, label = "Mana check 2", prompt = "Re-evaluate mana and assign the next recovery window." },
 	},
 })
+
+IPM:RegisterModule("ssc-core-runners", {
+	name = "Utility - SSC Core Runners",
+	description = "Tainted Core handoff reminders for Lady Vashj and similar pickup mechanics.",
+	cycles = {
+		core = { "Runner One", "Runner Two", "Runner Three" },
+	},
+	timeline = {
+		{ after = 20, label = "Core 1", prompt = "Tainted Core handoff", interruptCycle = "core", sound = true },
+		{ after = 40, label = "Core 2", prompt = "Tainted Core handoff", interruptCycle = "core", sound = true },
+		{ after = 60, label = "Core 3", prompt = "Tainted Core handoff", interruptCycle = "core", sound = true },
+		{ after = 80, label = "Core 4", prompt = "Tainted Core handoff", interruptCycle = "core", sound = true },
+	},
+})
+
+IPM:RegisterModule("tk-assignment-helper", {
+	name = "Utility - TK Assignment Helper",
+	description = "Assignment and marker reminders for Kael'thas, Solarian, and other Tempest Keep mechanics.",
+	timeline = {
+		{ after = 15, label = "Assignment check", prompt = "Confirm target assignments, CC, and tank marks." },
+		{ after = 50, label = "Weapon check", prompt = "Assign your weapon target or add pickup." },
+		{ after = 95, label = "Swap check", prompt = "Reconfirm swaps, interrupts, and priority targets.", sound = true },
+	},
+})
+
+IPM:RegisterModule("raid-movement", {
+	name = "Utility - Raid Movement",
+	description = "Generic spread, stack, and reposition reminders for heavy movement fights.",
+	timeline = {
+		{ after = 10, label = "Spread", prompt = "Spread out and leave room for targeted mechanics.", sound = true },
+		{ after = 35, label = "Stack", prompt = "Stack on the marker and prepare for the next mechanic.", sound = true },
+		{ after = 60, label = "Move", prompt = "Move now and keep your camera on the boss.", sound = true },
+	},
+})

@@ -295,6 +295,7 @@ local state = {
 	encounterId = nil,
 	module = nil,
 	activeEvents = {},
+	combatLogState = {},
 	nextEventId = 0,
 	timerTicks = 0,
 }
@@ -426,10 +427,162 @@ local function FireEvent(event)
 	end
 end
 
+local function ValueMatches(candidate, expected)
+	if expected == nil then
+		return true
+	end
+
+	if type(expected) == "table" then
+		if #expected > 0 then
+			for _, item in ipairs(expected) do
+				if item == candidate then
+					return true
+				end
+			end
+			return false
+		end
+
+		return expected[candidate] == true
+	end
+
+	return candidate == expected
+end
+
+local function MatchesCombatLogTrigger(trigger, info)
+	if type(trigger) ~= "table" or type(info) ~= "table" then
+		return false
+	end
+
+	if type(trigger.match) == "function" then
+		local ok, matched = pcall(trigger.match, trigger, info, state)
+		if ok and matched then
+			return true
+		end
+		return false
+	end
+
+	local events = trigger.events or trigger.event
+	if not ValueMatches(info.event, events) then
+		return false
+	end
+
+	if not ValueMatches(info.spellId, trigger.spellIds or trigger.spellId) then
+		return false
+	end
+
+	if not ValueMatches(info.spellName, trigger.spellNames or trigger.spellName) then
+		return false
+	end
+
+	if not ValueMatches(info.sourceName, trigger.sourceNames or trigger.sourceName) then
+		return false
+	end
+
+	if not ValueMatches(info.destName, trigger.destNames or trigger.destName) then
+		return false
+	end
+
+	return true
+end
+
+local function FireCombatLogTrigger(trigger, info, triggerKey)
+	local now = info.timestamp or GetTime()
+	local triggerState = state.combatLogState[triggerKey] or { lastFire = 0, fired = false }
+
+	if trigger.once and triggerState.fired then
+		return
+	end
+
+	local cooldown = tonumber(trigger.cooldown) or 0
+	if cooldown > 0 and triggerState.lastFire > 0 and (now - triggerState.lastFire) < cooldown then
+		return
+	end
+
+	triggerState.lastFire = now
+	if trigger.once then
+		triggerState.fired = true
+	end
+	state.combatLogState[triggerKey] = triggerState
+
+	local prompt = trigger.prompt
+	if prompt and prompt ~= "" then
+		if trigger.interruptCycle then
+			local nextName = GetNextInterruptName(trigger.interruptCycle)
+			if nextName then
+				prompt = string.format("%s - %s", prompt, nextName)
+			end
+		end
+
+		SetPrompt(prompt)
+		RaidWarn(prompt)
+	elseif trigger.interruptCycle then
+		local nextName = GetNextInterruptName(trigger.interruptCycle)
+		if nextName then
+			SetPrompt(string.format("Interrupt: %s", nextName))
+			RaidWarn(string.format("Interrupt: %s", nextName))
+		end
+	end
+
+	if trigger.announce then
+		RaidWarn(trigger.announce)
+	end
+
+	if trigger.sound ~= false then
+		PlayAlertSound()
+	end
+
+	if trigger.interruptCycle then
+		AdvanceInterruptCycle(trigger.interruptCycle)
+	end
+end
+
+local function HandleCombatLogEvent()
+	if not state.module then
+		return
+	end
+
+	if type(CombatLogGetCurrentEventInfo) ~= "function" then
+		return
+	end
+
+	local timestamp, subevent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, spellId, spellName = CombatLogGetCurrentEventInfo()
+	local info = {
+		timestamp = timestamp or GetTime(),
+		event = subevent,
+		sourceGUID = sourceGUID,
+		sourceName = sourceName,
+		sourceFlags = sourceFlags,
+		sourceRaidFlags = sourceRaidFlags,
+		destGUID = destGUID,
+		destName = destName,
+		destFlags = destFlags,
+		destRaidFlags = destRaidFlags,
+		spellId = spellId,
+		spellName = spellName,
+	}
+
+	if type(state.module.onCombatLog) == "function" then
+		SafeCall(state.module.onCombatLog, state.module, info, state)
+	end
+
+	local triggers = state.module.combatLogTriggers
+	if type(triggers) ~= "table" then
+		return
+	end
+
+	for index, trigger in ipairs(triggers) do
+		local triggerKey = string.format("%s:%d", state.module.id or state.encounterId or "module", index)
+		if MatchesCombatLogTrigger(trigger, info) then
+			FireCombatLogTrigger(trigger, info, triggerKey)
+		end
+	end
+end
+
 local function ClearEncounter(showComplete)
 	state.encounterId = nil
 	state.module = nil
 	state.activeEvents = {}
+	state.combatLogState = {}
 	state.nextEventId = 0
 	SetPrompt("")
 	ClearBars()
@@ -450,6 +603,7 @@ local function RegisterModule(id, module)
 	module.name = module.name or normalizedId
 	module.description = module.description or ""
 	module.timeline = type(module.timeline) == "table" and module.timeline or {}
+	module.combatLogTriggers = type(module.combatLogTriggers) == "table" and module.combatLogTriggers or {}
 	if db.moduleEnabled[normalizedId] == nil then
 		db.moduleEnabled[normalizedId] = true
 	end
@@ -481,6 +635,7 @@ local function StartEncounter(encounterId)
 	ClearEncounter(false)
 	state.encounterId = normalizedId
 	state.module = module
+	state.combatLogState = {}
 
 	if type(module.cycles) == "table" then
 		for cycleName, members in pairs(module.cycles) do
@@ -1024,6 +1179,7 @@ end
 
 local function RegisterEventHandlers()
 	Fojiji:RegisterEvent("PLAYER_LOGIN")
+	Fojiji:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	Fojiji:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Fojiji:RegisterEvent("PLAYER_REGEN_ENABLED")
 	Fojiji:SetScript("OnEvent", function(_, event)
@@ -1031,6 +1187,13 @@ local function RegisterEventHandlers()
 			GetDB()
 			UpdateScale()
 			ApplySavedFramePosition()
+			return
+		end
+
+		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+			if state.encounterId then
+				HandleCombatLogEvent()
+			end
 			return
 		end
 
