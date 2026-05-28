@@ -1,0 +1,8 @@
+## Interface: 20505
+## Title: I Pull Mob
+## Notes: Raid timers, interrupt cycles, and action prompts for WoW TBC Anniversary.
+## Author: I Pull Mob
+## Version: 0.1.0
+## SavedVariables: IPullMobDB
+
+IPullMob.lua
