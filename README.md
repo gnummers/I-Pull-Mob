@@ -17,7 +17,8 @@ It is intentionally structured like a lightweight encounter framework:
 - Raid-warning style alerts when events fire
 - Interrupt cycle tracking and rotation advancement
 - Slash-command driven testing
-- Example boss modules already registered in the core
+- In-game options window for enabling and disabling modules
+- Starter raid modules for Karazhan, Gruul's Lair, Magtheridon, SSC, and Tempest Keep
 
 ## Slash Commands
 
@@ -27,6 +28,9 @@ It is intentionally structured like a lightweight encounter framework:
 - `/ipm stop` - stop the current module
 - `/ipm modules` - list registered modules
 - `/ipm cycles` - list configured interrupt cycles
+- `/ipm options` - open the module and settings window
+- `/ipm enable <module>` - enable a module
+- `/ipm disable <module>` - disable a module
 - `/ipm cycle <name> add <player>` - add a player to a cycle
 - `/ipm cycle <name> list` - show cycle members
 - `/ipm cycle <name> next` - advance the cycle manually
@@ -52,6 +56,16 @@ The addon ships with starter modules:
 - `gruuls-lair` - Gruul the Dragonkiller, with Growth, Cave In, and Shatter reminders
 - `maulgar` - High King Maulgar
 - `magtheridons-lair` - Magtheridon, with Blast Nova cube rotations and a Quake reminder
+- `ssc-hydross` - Hydross the Unstable
+- `ssc-lurker` - The Lurker Below
+- `ssc-leotheras` - Leotheras the Blind
+- `ssc-karathress` - Fathom-Lord Karathress
+- `ssc-morogrim` - Morogrim Tidewalker
+- `ssc-vashj` - Lady Vashj
+- `tk-void-reaver` - Void Reaver
+- `tk-alar` - Al'ar
+- `tk-solarian` - High Astromancer Solarian
+- `tk-kaelthas` - Kael'thas Sunstrider
 
 These are starter modules that can be refined further with raid testing and pull logs.
 
@@ -65,6 +79,16 @@ Each raid module can define:
 - optional hooks like `onStart`, `onSchedule`, `onEvent`
 
 That makes the addon suitable for converting WeakAura-style raid logic into a standalone raid assistant.
+
+## Options
+
+Use `/ipm options` to open the configuration window. From there you can:
+
+- toggle core behaviors like alert sounds, auto-show, and window lock
+- enable or disable any registered module
+- keep utility modules disabled when you do not want them loaded for a night
+
+Disabled modules remain registered, but `/ipm start <module>` will refuse to launch them until they are re-enabled.
 
 ## Installation
 

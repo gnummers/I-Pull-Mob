@@ -21,3 +21,13 @@ Modules\Karazhan_Prince.lua
 Modules\Gruuls_Lair.lua
 Modules\HighKing_Maulgar.lua
 Modules\Magtheridons_Lair.lua
+Modules\SSC_Hydross.lua
+Modules\SSC_Lurker.lua
+Modules\SSC_Leotheras.lua
+Modules\SSC_Karathress.lua
+Modules\SSC_Morogrim.lua
+Modules\SSC_Vashj.lua
+Modules\TK_VoidReaver.lua
+Modules\TK_Alar.lua
+Modules\TK_Solarian.lua
+Modules\TK_Kaelthas.lua

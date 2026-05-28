@@ -87,6 +87,10 @@ local function GetDB()
 		db.frame = { x = 0, y = 0 }
 	end
 
+	if type(db.moduleEnabled) ~= "table" then
+		db.moduleEnabled = {}
+	end
+
 	return db
 end
 
@@ -162,7 +166,46 @@ local function NormalizeModuleId(id)
 	return id
 end
 
+local function IsModuleEnabled(id)
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId then
+		return false
+	end
+
+	local db = GetDB()
+	if db.moduleEnabled[normalizedId] == nil then
+		return true
+	end
+
+	return db.moduleEnabled[normalizedId] ~= false
+end
+
+local function SetModuleEnabled(id, enabled)
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId then
+		return false
+	end
+
+	local db = GetDB()
+	db.moduleEnabled[normalizedId] = enabled and true or false
+
+	if state.encounterId == normalizedId and not enabled then
+		ClearEncounter(false)
+		Print(string.format("Stopped disabled module: %s", normalizedId))
+	end
+
+	if optionsFrame and optionsFrame:IsShown() and type(RefreshOptionsWindow) == "function" then
+		RefreshOptionsWindow()
+	end
+
+	return true
+end
+
 local Modules = {}
+local optionsFrame
+local optionsModuleButtons = {}
+local OpenOptionsWindow
+local RefreshOptionsWindow
 
 local Fojiji = CreateFrame("Frame", "IPullMobFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 Fojiji:SetSize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
@@ -377,10 +420,14 @@ local function RegisterModule(id, module)
 		return false
 	end
 
+	local db = GetDB()
 	module.id = normalizedId
 	module.name = module.name or normalizedId
 	module.description = module.description or ""
 	module.timeline = type(module.timeline) == "table" and module.timeline or {}
+	if db.moduleEnabled[normalizedId] == nil then
+		db.moduleEnabled[normalizedId] = true
+	end
 	Modules[normalizedId] = module
 	return true
 end
@@ -398,6 +445,11 @@ local function StartEncounter(encounterId)
 	local module = normalizedId and Modules[normalizedId] or nil
 	if not module then
 		Print(string.format("Unknown module '%s'. Use /ipm modules to list available modules.", tostring(encounterId)))
+		return false
+	end
+
+	if not IsModuleEnabled(normalizedId) then
+		Print(string.format("Module '%s' is disabled. Use /ipm enable %s or the options window.", normalizedId, normalizedId))
 		return false
 	end
 
@@ -497,7 +549,8 @@ local function ListModules()
 
 	for _, id in ipairs(names) do
 		local module = Modules[id]
-		Print(string.format("%s - %s", id, module.name or id))
+		local status = IsModuleEnabled(id) and "enabled" or "disabled"
+		Print(string.format("%s [%s] - %s", id, status, module.name or id))
 	end
 end
 
@@ -521,7 +574,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm modules, /ipm cycles, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm modules, /ipm cycles, /ipm options, /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -545,6 +598,11 @@ local function HandleSlash(msg)
 
 	if lower == "cycles" then
 		ListCycles()
+		return
+	end
+
+	if lower == "options" then
+		OpenOptionsWindow()
 		return
 	end
 
@@ -575,6 +633,22 @@ local function HandleSlash(msg)
 	if lower == "sound off" then
 		GetDB().soundEnabled = false
 		Print("Sounds disabled.")
+		return
+	end
+
+	local enableId = lower:match("^enable%s+(.+)$")
+	if enableId then
+		if SetModuleEnabled(enableId, true) then
+			Print(string.format("Enabled module %s.", NormalizeModuleId(enableId)))
+		end
+		return
+	end
+
+	local disableId = lower:match("^disable%s+(.+)$")
+	if disableId then
+		if SetModuleEnabled(disableId, false) then
+			Print(string.format("Disabled module %s.", NormalizeModuleId(disableId)))
+		end
 		return
 	end
 
@@ -642,6 +716,201 @@ local function UpdateScale()
 	Fojiji:SetScale(GetDB().scale or DEFAULT_SCALE)
 end
 
+local function CreateOptionsWindow()
+	if optionsFrame then
+		return optionsFrame
+	end
+
+	optionsFrame = CreateFrame("Frame", "IPullMobOptionsFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	optionsFrame:SetSize(520, 540)
+	optionsFrame:SetPoint("CENTER")
+	optionsFrame:SetMovable(true)
+	optionsFrame:SetClampedToScreen(true)
+	optionsFrame:EnableMouse(true)
+	optionsFrame:RegisterForDrag("LeftButton")
+	optionsFrame:SetScript("OnDragStart", function(self)
+		self:StartMoving()
+	end)
+	optionsFrame:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+	optionsFrame:SetBackdrop({
+		bgFile = [[Interface\Tooltips\UI-Tooltip-Background]],
+		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+		tile = true,
+		tileSize = 12,
+		edgeSize = 12,
+		insets = { left = 4, right = 4, top = 4, bottom = 4 },
+	})
+	optionsFrame:SetBackdropColor(0.05, 0.05, 0.07, 0.95)
+	optionsFrame:SetBackdropBorderColor(0.45, 0.45, 0.55, 1)
+	optionsFrame:Hide()
+
+	optionsFrame.title = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+	optionsFrame.title:SetPoint("TOPLEFT", 14, -12)
+	optionsFrame.title:SetText("I Pull Mob Options")
+
+	optionsFrame.subtitle = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	optionsFrame.subtitle:SetPoint("TOPLEFT", optionsFrame.title, "BOTTOMLEFT", 0, -4)
+	optionsFrame.subtitle:SetText("Enable modules and tune the core raid helper settings.")
+
+	local close = CreateFrame("Button", nil, optionsFrame, "UIPanelCloseButton")
+	close:SetPoint("TOPRIGHT", 4, 4)
+
+	optionsFrame.generalLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.generalLabel:SetPoint("TOPLEFT", 16, -52)
+	optionsFrame.generalLabel:SetText("General")
+
+	local function MakeToggle(buttonName, label, anchorPoint, relativeTo, relativePoint, x, y, getter, setter)
+		local button = CreateFrame("CheckButton", buttonName, optionsFrame, "UICheckButtonTemplate")
+		button:SetPoint(anchorPoint, relativeTo, relativePoint, x, y)
+		button.Text:SetText(label)
+		button:SetScript("OnClick", function(self)
+			setter(self:GetChecked() and true or false)
+		end)
+		button.Refresh = function(self)
+			self:SetChecked(getter() and true or false)
+		end
+		return button
+	end
+
+	optionsFrame.soundToggle = MakeToggle(
+		"IPullMobOptionsSoundToggle",
+		"Play alert sounds",
+		"TOPLEFT",
+		optionsFrame,
+		"TOPLEFT",
+		12,
+		-72,
+		function()
+			return GetDB().soundEnabled
+		end,
+		function(value)
+			GetDB().soundEnabled = value and true or false
+		end
+	)
+
+	optionsFrame.autoShowToggle = MakeToggle(
+		"IPullMobOptionsAutoShowToggle",
+		"Auto-show on combat start",
+		"TOPLEFT",
+		optionsFrame.soundToggle,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		function()
+			return GetDB().autoShow
+		end,
+		function(value)
+			GetDB().autoShow = value and true or false
+		end
+	)
+
+	optionsFrame.lockToggle = MakeToggle(
+		"IPullMobOptionsLockToggle",
+		"Lock the raid window",
+		"TOPLEFT",
+		optionsFrame.autoShowToggle,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		function()
+			return GetDB().locked
+		end,
+		function(value)
+			GetDB().locked = value and true or false
+		end
+	)
+
+	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -136)
+	optionsFrame.modulesLabel:SetText("Modules")
+
+	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetPoint("TOPLEFT", 14, -160)
+	scrollFrame:SetPoint("BOTTOMRIGHT", -32, 14)
+
+	local content = CreateFrame("Frame", nil, scrollFrame)
+	content:SetSize(1, 1)
+	scrollFrame:SetScrollChild(content)
+	optionsFrame.scrollFrame = scrollFrame
+	optionsFrame.scrollContent = content
+
+	local scrollbar = _G[scrollFrame:GetName() .. "ScrollBar"]
+	if scrollbar then
+		scrollbar:ClearAllPoints()
+		scrollbar:SetPoint("TOPRIGHT", scrollFrame, "TOPRIGHT", 0, -16)
+		scrollbar:SetPoint("BOTTOMRIGHT", scrollFrame, "BOTTOMRIGHT", 0, 16)
+	end
+
+	RefreshOptionsWindow = function()
+		optionsFrame.soundToggle:Refresh()
+		optionsFrame.autoShowToggle:Refresh()
+		optionsFrame.lockToggle:Refresh()
+
+		local names = {}
+		for id in pairs(Modules) do
+			table.insert(names, id)
+		end
+		table.sort(names)
+
+		local spacing = 24
+		local visibleHeight = 0
+
+		for i, id in ipairs(names) do
+			local button = optionsModuleButtons[i]
+			if not button then
+				button = CreateFrame("CheckButton", nil, content, "UICheckButtonTemplate")
+				optionsModuleButtons[i] = button
+				button:SetScript("OnClick", function(self)
+					SetModuleEnabled(self.moduleId, self:GetChecked() and true or false)
+				end)
+			end
+
+			local module = Modules[id]
+			button:ClearAllPoints()
+			button:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -visibleHeight)
+			button.moduleId = id
+			button.Text:SetText(string.format("%s (%s)", module.name or id, id))
+			button:SetChecked(IsModuleEnabled(id) and true or false)
+			button:Show()
+			visibleHeight = visibleHeight + spacing
+		end
+
+		for i = #names + 1, #optionsModuleButtons do
+			optionsModuleButtons[i]:Hide()
+		end
+
+		content:SetHeight(math.max(visibleHeight, 1))
+		optionsFrame.modulesLabel:SetText(string.format("Modules (%d enabled / %d total)", (function()
+			local enabledCount = 0
+			for _, id in ipairs(names) do
+				if IsModuleEnabled(id) then
+					enabledCount = enabledCount + 1
+				end
+			end
+			return enabledCount
+		end)(), #names))
+	end
+
+	optionsFrame:SetScript("OnShow", function()
+		if type(RefreshOptionsWindow) == "function" then
+			RefreshOptionsWindow()
+		end
+	end)
+
+	return optionsFrame
+end
+
+OpenOptionsWindow = function()
+	local frame = CreateOptionsWindow()
+	if type(RefreshOptionsWindow) == "function" then
+		RefreshOptionsWindow()
+	end
+	frame:Show()
+	return frame
+end
+
 local function RegisterEventHandlers()
 	Fojiji:RegisterEvent("PLAYER_LOGIN")
 	Fojiji:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -685,6 +954,8 @@ end
 local function RegisterAPI()
 	_G.IPullMob = {
 		RegisterModule = RegisterModule,
+		IsModuleEnabled = IsModuleEnabled,
+		SetModuleEnabled = SetModuleEnabled,
 		StartEncounter = StartEncounter,
 		ClearEncounter = ClearEncounter,
 		RegisterInterruptCycle = function(_, name, members)
@@ -717,6 +988,12 @@ local function RegisterAPI()
 		end,
 		GetEncounterData = function(_, id)
 			return Modules[NormalizeModuleId(id) or ""]
+		end,
+		OpenOptions = OpenOptionsWindow,
+		RefreshOptions = function()
+			if type(RefreshOptionsWindow) == "function" then
+				RefreshOptionsWindow()
+			end
 		end,
 	}
 end
