@@ -876,6 +876,252 @@ local function RegisterDefaultModules()
 		end,
 	})
 
+	RegisterModule("kara-attumen", {
+		name = "Karazhan - Attumen the Huntsman",
+		description = "Starter Attumen module: phase swap and charge reminders.",
+		timeline = {
+			{ after = 15, label = "Shadow Cleave", prompt = "Stay out of cleave range on the tank" },
+			{
+				after = 60,
+				label = "Mount Phase",
+				prompt = "Swap to Midnight and get ready to reposition",
+				announce = "Attumen is mounting",
+				sound = true,
+			},
+			{
+				after = 90,
+				label = "Berserker Charge",
+				prompt = "Move for charge and keep spread",
+			},
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-moroes", {
+		name = "Karazhan - Moroes",
+		description = "Starter Moroes module: Garrote cadence, add control, and execute reminders.",
+		cycles = {
+			garrote = { "Priest", "Paladin", "Shaman" },
+		},
+		timeline = {
+			{
+				after = 10,
+				label = "Garrote 1",
+				prompt = "Dispel the garrote target",
+				interruptCycle = "garrote",
+			},
+			{ after = 25, label = "Moroes adds", prompt = "Control the add pack" },
+			{
+				after = 40,
+				label = "Garrote 2",
+				prompt = "Dispel the next garrote target",
+				interruptCycle = "garrote",
+			},
+			{ after = 70, label = "Moroes adds", prompt = "Re-control adds and keep tanks stable" },
+			{
+				after = 90,
+				label = "Garrote 3",
+				prompt = "Dispel the next garrote target",
+				interruptCycle = "garrote",
+			},
+			{
+				after = 120,
+				label = "Execute",
+				prompt = "Prepare for Moroes enrage pressure at low health",
+				announce = "Moroes is close to execute range",
+				sound = true,
+			},
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-maiden", {
+		name = "Karazhan - Maiden of Virtue",
+		description = "Starter Maiden module: Holy Fire and Repentance reminders.",
+		timeline = {
+			{ after = 13, label = "Holy Fire", prompt = "Keep distance from the debuffed target" },
+			{
+				after = 30,
+				label = "Repentance",
+				prompt = "Move to break repentance or prepare self-heals",
+				announce = "Repentance incoming",
+				sound = true,
+			},
+			{ after = 43, label = "Holy Fire", prompt = "Keep distance from the debuffed target" },
+			{
+				after = 60,
+				label = "Repentance",
+				prompt = "Move to break repentance or prepare self-heals",
+				announce = "Repentance incoming",
+				sound = true,
+			},
+			{ after = 73, label = "Holy Fire", prompt = "Keep distance from the debuffed target" },
+			{
+				after = 90,
+				label = "Repentance",
+				prompt = "Move to break repentance or prepare self-heals",
+				announce = "Repentance incoming",
+				sound = true,
+			},
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-aran", {
+		name = "Karazhan - Shade of Aran",
+		description = "Starter Aran module: Flame Wreath, Blizzard, and Arcane Explosion reminders.",
+		timeline = {
+			{
+				after = 30,
+				label = "Special 1",
+				prompt = "Watch for Flame Wreath, Blizzard, or Arcane Explosion",
+				announce = "Shade of Aran is casting a special",
+				sound = true,
+			},
+			{
+				after = 65,
+				label = "Special 2",
+				prompt = "Watch for Flame Wreath, Blizzard, or Arcane Explosion",
+				announce = "Shade of Aran is casting a special",
+				sound = true,
+			},
+			{
+				after = 100,
+				label = "Special 3",
+				prompt = "Watch for Flame Wreath, Blizzard, or Arcane Explosion",
+				announce = "Shade of Aran is casting a special",
+				sound = true,
+			},
+			{
+				after = 135,
+				label = "Elementals",
+				prompt = "Handle water elementals and keep interrupts going",
+			},
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-chess", {
+		name = "Karazhan - Chess Event",
+		description = "Starter Chess Event module: board control reminders.",
+		timeline = {
+			{ after = 5, label = "Start", prompt = "Open with your assigned piece" },
+			{ after = 20, label = "Board pressure", prompt = "Keep pushing the enemy backline" },
+			{ after = 40, label = "Board pressure", prompt = "Use piece abilities on cooldown" },
+			{ after = 60, label = "Finish", prompt = "Push for king pressure and cleanup" },
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-netherspite", {
+		name = "Karazhan - Netherspite",
+		description = "Starter Netherspite module: beam swap and portal cycle reminders.",
+		timeline = {
+			{ after = 15, label = "Portal Phase", prompt = "Assign beams and establish rotations" },
+			{ after = 35, label = "Portal Phase", prompt = "Swap beam users before stacks get high" },
+			{
+				after = 55,
+				label = "Banished Phase",
+				prompt = "Boss is vulnerable, burn hard and reset positioning",
+				announce = "Banish phase",
+				sound = true,
+			},
+			{ after = 75, label = "Portal Phase", prompt = "Reassign beams and stabilize tanks" },
+			{ after = 95, label = "Portal Phase", prompt = "Swap beam users before stacks get high" },
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-nightbane", {
+		name = "Karazhan - Nightbane",
+		description = "Starter Nightbane module: air phase and fear handling reminders.",
+		timeline = {
+			{ after = 45, label = "Air Phase 1", prompt = "Handle Rain of Bones and avoid fire damage" },
+			{ after = 75, label = "Ground Phase", prompt = "Stabilize after landing and recover positions" },
+			{ after = 120, label = "Air Phase 2", prompt = "Handle Rain of Bones and avoid fire damage" },
+			{ after = 150, label = "Ground Phase", prompt = "Stabilize after landing and recover positions" },
+			{ after = 195, label = "Air Phase 3", prompt = "Handle Rain of Bones and avoid fire damage" },
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("kara-prince", {
+		name = "Karazhan - Prince Malchezaar",
+		description = "Starter Prince module: axes, enfeeble, and infernal reminders.",
+		timeline = {
+			{
+				after = 20,
+				label = "Infernal 1",
+				prompt = "Watch for infernal landing zones",
+				announce = "Infernal incoming",
+				sound = true,
+			},
+			{
+				after = 35,
+				label = "Enfeeble 1",
+				prompt = "Be ready to heal or use a health item",
+				announce = "Enfeeble incoming",
+				sound = true,
+			},
+			{
+				after = 50,
+				label = "Axe Toss",
+				prompt = "Watch clothies and heal through the spike",
+			},
+			{
+				after = 70,
+				label = "Infernal 2",
+				prompt = "Watch for infernal landing zones",
+				announce = "Infernal incoming",
+				sound = true,
+			},
+			{
+				after = 95,
+				label = "Enfeeble 2",
+				prompt = "Be ready to heal or use a health item",
+				announce = "Enfeeble incoming",
+				sound = true,
+			},
+			{
+				after = 110,
+				label = "Axe Toss",
+				prompt = "Watch clothies and heal through the spike",
+			},
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
+	RegisterModule("maulgar", {
+		name = "Gruul's Lair - High King Maulgar",
+		description = "Starter Maulgar module: whirlwind, fear, and add control reminders.",
+		timeline = {
+			{ after = 10, label = "Add Control", prompt = "Keep the council controlled and marked" },
+			{ after = 25, label = "Whirlwind", prompt = "Move melee away from the king" },
+			{ after = 40, label = "Fear", prompt = "Prepare to recover from fear" },
+			{ after = 55, label = "Whirlwind", prompt = "Move melee away from the king" },
+			{ after = 70, label = "Fear", prompt = "Prepare to recover from fear" },
+		},
+		onStart = function(module)
+			Print(string.format("Loaded module: %s", module.name))
+		end,
+	})
+
 	RegisterModule("test-rotations", {
 		name = "Interrupt Rotation Test",
 		description = "Utility module for testing cycle order and prompt behavior without an actual boss.",

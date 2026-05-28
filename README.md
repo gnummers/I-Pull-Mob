@@ -39,8 +39,17 @@ The addon ships with starter modules:
 
 - `demo` - an example boss module with a pull timer, movement prompt, and interrupt cycle
 - `test-rotations` - a utility module for checking interrupt order and prompt flow
+- `kara-attumen` - Attumen the Huntsman
+- `kara-moroes` - Moroes
+- `kara-maiden` - Maiden of Virtue
 - `kara-curator` - The Curator in Karazhan, with flare waves and Evocation warnings
+- `kara-aran` - Shade of Aran
+- `kara-chess` - The Chess Event
+- `kara-netherspite` - Netherspite
+- `kara-nightbane` - Nightbane
+- `kara-prince` - Prince Malchezaar
 - `gruuls-lair` - Gruul the Dragonkiller, with Growth, Cave In, and Shatter reminders
+- `maulgar` - High King Maulgar
 - `magtheridons-lair` - Magtheridon, with Blast Nova cube rotations and a Quake reminder
 
 These are starter modules that can be refined further with raid testing and pull logs.
