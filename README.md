@@ -56,6 +56,9 @@ The addon ships with starter modules:
 - `gruuls-lair` - Gruul the Dragonkiller, with Growth, Cave In, and Shatter reminders
 - `maulgar` - High King Maulgar
 - `magtheridons-lair` - Magtheridon, with Blast Nova cube rotations and a Quake reminder
+- `pull-timers` - a simple pull countdown module
+- `reminder-popups` - generic pre-pull or mid-raid reminder prompts
+- `taunt-alerter` - generic tank swap reminders
 - `ssc-hydross` - Hydross the Unstable
 - `ssc-lurker` - The Lurker Below
 - `ssc-leotheras` - Leotheras the Blind
@@ -66,6 +69,9 @@ The addon ships with starter modules:
 - `tk-alar` - Al'ar
 - `tk-solarian` - High Astromancer Solarian
 - `tk-kaelthas` - Kael'thas Sunstrider
+- `prepull-checklist` - a short pre-pull readiness checklist
+- `raid-cooldowns` - generic raid cooldown reminders
+- `mana-reminders` - mana check and potion prompts
 
 These are starter modules that can be refined further with raid testing and pull logs.
 
@@ -85,6 +91,8 @@ That makes the addon suitable for converting WeakAura-style raid logic into a st
 Use `/ipm options` to open the configuration window. From there you can:
 
 - toggle core behaviors like alert sounds, auto-show, and window lock
+- adjust the frame scale
+- adjust the alert volume used for addon sounds
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
 

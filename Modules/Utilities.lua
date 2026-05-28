@@ -38,3 +38,34 @@ IPM:RegisterModule("taunt-alerter", {
 		{ after = 55, label = "Taunt 4", prompt = "Taunt swap now", interruptCycle = "taunt", sound = true },
 	},
 })
+
+IPM:RegisterModule("prepull-checklist", {
+	name = "Utility - Pre-Pull Checklist",
+	description = "A short checklist for buffs, consumes, assignments, and ready checks before a pull.",
+	timeline = {
+		{ after = 5, label = "Buff check", prompt = "Verify buffs, consumes, and weapon enchants." },
+		{ after = 12, label = "Assignment check", prompt = "Confirm assignments: tank, interrupts, and markers." },
+		{ after = 20, label = "Ready check", prompt = "Run a final ready check and start the pull timer.", sound = true },
+	},
+})
+
+IPM:RegisterModule("raid-cooldowns", {
+	name = "Utility - Raid Cooldowns",
+	description = "A generic reminder track for raid-wide healing or defensive cooldowns.",
+	timeline = {
+		{ after = 20, label = "CD 1", prompt = "Call for the first raid cooldown.", sound = true },
+		{ after = 90, label = "CD 2", prompt = "Call for the second raid cooldown.", sound = true },
+		{ after = 160, label = "CD 3", prompt = "Call for the third raid cooldown.", sound = true },
+		{ after = 230, label = "CD 4", prompt = "Call for the next raid cooldown.", sound = true },
+	},
+})
+
+IPM:RegisterModule("mana-reminders", {
+	name = "Utility - Mana Reminders",
+	description = "Reminder prompts for healers and casters who need to watch mana throughout a fight.",
+	timeline = {
+		{ after = 45, label = "Mana check", prompt = "Check healer mana and plan the next external cooldown." },
+		{ after = 90, label = "Mana pot", prompt = "Use a mana potion or ask for an innervate if needed.", sound = true },
+		{ after = 150, label = "Mana check 2", prompt = "Re-evaluate mana and assign the next recovery window." },
+	},
+})

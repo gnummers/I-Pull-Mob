@@ -6,6 +6,7 @@ local DEFAULT_WIDTH = 340
 local DEFAULT_HEIGHT = 180
 local MAX_BARS = 8
 local DEFAULT_SCALE = 1
+local DEFAULT_ALERT_VOLUME = 1
 local DEFAULT_SOUND_ENABLED = true
 local DEFAULT_AUTO_SHOW = true
 local DEFAULT_LOCKED = false
@@ -71,6 +72,10 @@ local function GetDB()
 		db.soundEnabled = DEFAULT_SOUND_ENABLED
 	end
 
+	if type(db.alertVolume) ~= "number" then
+		db.alertVolume = DEFAULT_ALERT_VOLUME
+	end
+
 	if type(db.autoShow) ~= "boolean" then
 		db.autoShow = DEFAULT_AUTO_SHOW
 	end
@@ -108,8 +113,28 @@ local function PlayAlertSound()
 		return
 	end
 
+	local db = GetDB()
+	local previousVolume
+	local volumeCVar = "Sound_MasterVolume"
+
+	if type(GetCVar) == "function" and type(SetCVar) == "function" then
+		previousVolume = tonumber(GetCVar(volumeCVar))
+		if not previousVolume then
+			volumeCVar = "Sound_SFXVolume"
+			previousVolume = tonumber(GetCVar(volumeCVar))
+		end
+
+		if previousVolume then
+			SetCVar(volumeCVar, math.max(0, math.min(1, db.alertVolume or DEFAULT_ALERT_VOLUME)))
+		end
+	end
+
 	if type(PlaySound) == "function" then
 		PlaySound(8959, "Master")
+	end
+
+	if previousVolume and type(SetCVar) == "function" then
+		SetCVar(volumeCVar, previousVolume)
 	end
 end
 
@@ -822,12 +847,96 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	local function MakeSlider(sliderName, label, anchorPoint, relativeTo, relativePoint, x, y, minValue, maxValue, stepValue, getter, setter, formatValue)
+		local slider = CreateFrame("Slider", sliderName, optionsFrame, "OptionsSliderTemplate")
+		slider:SetPoint(anchorPoint, relativeTo, relativePoint, x, y)
+		slider:SetWidth(180)
+		slider:SetMinMaxValues(minValue, maxValue)
+		slider:SetValueStep(stepValue)
+		slider:SetObeyStepOnDrag(true)
+		slider:SetValue(getter())
+		_G[sliderName .. "Low"]:SetText(formatValue(minValue))
+		_G[sliderName .. "High"]:SetText(formatValue(maxValue))
+		_G[sliderName .. "Text"]:SetText(label)
+		slider.valueText = slider:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		slider.valueText:SetPoint("LEFT", slider, "RIGHT", 8, 0)
+		slider.valueText:SetWidth(80)
+		slider.valueText:SetJustifyH("LEFT")
+		slider:SetScript("OnValueChanged", function(self, value)
+			local snapped = math.floor((value / stepValue) + 0.5) * stepValue
+			snapped = math.max(minValue, math.min(maxValue, snapped))
+			snapped = math.floor(snapped * 100 + 0.5) / 100
+			if self._updating then
+				return
+			end
+			self._updating = true
+			self:SetValue(snapped)
+			setter(snapped)
+			self.valueText:SetText(formatValue(snapped))
+			self._updating = false
+		end)
+		slider.Refresh = function(self)
+			self._updating = true
+			local value = getter()
+			self:SetValue(value)
+			self.valueText:SetText(formatValue(value))
+			self._updating = false
+		end
+		slider:Refresh()
+		return slider
+	end
+
+	optionsFrame.scaleSlider = MakeSlider(
+		"IPullMobOptionsScaleSlider",
+		"Frame scale",
+		"TOPLEFT",
+		optionsFrame.lockToggle,
+		"BOTTOMLEFT",
+		4,
+		-26,
+		0.5,
+		2.0,
+		0.05,
+		function()
+			return GetDB().scale
+		end,
+		function(value)
+			GetDB().scale = value
+			UpdateScale()
+		end,
+		function(value)
+			return string.format("%.2fx", value)
+		end
+	)
+
+	optionsFrame.volumeSlider = MakeSlider(
+		"IPullMobOptionsVolumeSlider",
+		"Alert volume",
+		"TOPLEFT",
+		optionsFrame.scaleSlider,
+		"BOTTOMLEFT",
+		0,
+		-30,
+		0,
+		1,
+		0.05,
+		function()
+			return GetDB().alertVolume
+		end,
+		function(value)
+			GetDB().alertVolume = value
+		end,
+		function(value)
+			return string.format("%d%%", math.floor(value * 100 + 0.5))
+		end
+	)
+
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -136)
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -260)
 	optionsFrame.modulesLabel:SetText("Modules")
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", 14, -160)
+	scrollFrame:SetPoint("TOPLEFT", 14, -284)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -32, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
@@ -847,6 +956,8 @@ local function CreateOptionsWindow()
 		optionsFrame.soundToggle:Refresh()
 		optionsFrame.autoShowToggle:Refresh()
 		optionsFrame.lockToggle:Refresh()
+		optionsFrame.scaleSlider:Refresh()
+		optionsFrame.volumeSlider:Refresh()
 
 		local names = {}
 		for id in pairs(Modules) do
