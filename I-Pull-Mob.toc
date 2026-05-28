@@ -6,3 +6,18 @@
 ## SavedVariables: IPullMobDB
 
 IPullMob.lua
+Modules\Demo.lua
+Modules\TestRotations.lua
+Modules\Utilities.lua
+Modules\Karazhan_Attumen.lua
+Modules\Karazhan_Moroes.lua
+Modules\Karazhan_Maiden.lua
+Modules\Karazhan_Curator.lua
+Modules\Karazhan_Aran.lua
+Modules\Karazhan_Chess.lua
+Modules\Karazhan_Netherspite.lua
+Modules\Karazhan_Nightbane.lua
+Modules\Karazhan_Prince.lua
+Modules\Gruuls_Lair.lua
+Modules\HighKing_Maulgar.lua
+Modules\Magtheridons_Lair.lua

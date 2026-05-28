@@ -8,6 +8,7 @@ It is intentionally structured like a lightweight encounter framework:
 - the core addon renders timer bars and prompts
 - interrupt rotations are tracked separately from the encounter script
 - the addon can be tested with built-in demo modules before real boss data is added
+- raid and utility modules live in `Modules\*.lua` and register themselves after the core API loads
 
 ## Current Features
 
@@ -76,6 +77,7 @@ That makes the addon suitable for converting WeakAura-style raid logic into a st
 - Addon title: `I Pull Mob`
 - Saved variables: `IPullMobDB`
 - Main file: `IPullMob.lua`
+- Encounter modules: `Modules\*.lua`
 
 ## Next Step
 
