@@ -48,8 +48,10 @@ The addon ships with starter modules:
 - `kara-moroes` - Moroes
 - `kara-maiden` - Maiden of Virtue
 - `kara-curator` - The Curator in Karazhan, with flare waves and Evocation warnings
+- `kara-illhoof` - Terestian Illhoof
 - `kara-aran` - Shade of Aran
 - `kara-chess` - The Chess Event
+- `kara-opera` - The Opera Event
 - `kara-netherspite` - Netherspite
 - `kara-nightbane` - Nightbane
 - `kara-prince` - Prince Malchezaar
@@ -76,7 +78,7 @@ The addon ships with starter modules:
 - `raid-cooldowns` - generic raid cooldown reminders
 - `mana-reminders` - mana check and potion prompts
 
-These are starter modules that can be refined further with raid testing and pull logs.
+These cover the full boss list for Phase 1 and Phase 2 TBC raid content in this addon.
 
 ## Module Model
 

@@ -13,8 +13,10 @@ Modules\Karazhan_Attumen.lua
 Modules\Karazhan_Moroes.lua
 Modules\Karazhan_Maiden.lua
 Modules\Karazhan_Curator.lua
+Modules\Karazhan_Illhoof.lua
 Modules\Karazhan_Aran.lua
 Modules\Karazhan_Chess.lua
+Modules\Karazhan_Opera.lua
 Modules\Karazhan_Netherspite.lua
 Modules\Karazhan_Nightbane.lua
 Modules\Karazhan_Prince.lua
