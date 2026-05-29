@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("maulgar", {
 	name = "Gruul's Lair - High King Maulgar",
 	description = "Starter Maulgar module: whirlwind, fear, and add control reminders.",
+	bossIds = { 18831 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Whirlwind", prompt = "Whirlwind - move melee away from the king.", announce = "Whirlwind", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Intimidating Roar", prompt = "Fear - prepare to recover from fear.", announce = "Fear", sound = true },

@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("za-nalorakk", {
 	name = "Zul'Aman - Nalorakk",
 	description = "Starter timing pass for the bear phase swap and surge pressure.",
+	bossIds = { 23576 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Surge", prompt = "Surge - tank swap and stabilize the target.", announce = "Surge", sound = true },
 	},
@@ -19,6 +20,7 @@ IPM:RegisterModule("za-nalorakk", {
 IPM:RegisterModule("za-akilzon", {
 	name = "Zul'Aman - Akil'zon",
 	description = "Starter timing pass for Electrical Storm and add control.",
+	bossIds = { 23574 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Electrical Storm", prompt = "Electrical Storm - stack and follow the safe call.", announce = "Electrical Storm", sound = true },
 	},
@@ -32,6 +34,7 @@ IPM:RegisterModule("za-akilzon", {
 IPM:RegisterModule("za-janalai", {
 	name = "Zul'Aman - Jan'alai",
 	description = "Starter timing pass for eggs, bombs, and hatchling waves.",
+	bossIds = { 23578 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Flame Breath", prompt = "Flame Breath - move the tank and keep the raid safe.", announce = "Flame Breath", sound = true },
 	},
@@ -45,6 +48,7 @@ IPM:RegisterModule("za-janalai", {
 IPM:RegisterModule("za-halazzi", {
 	name = "Zul'Aman - Halazzi",
 	description = "Starter timing pass for totems, splits, and lynx pressure.",
+	bossIds = { 23577 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Lynx Rush", prompt = "Lynx Rush - move the raid and stabilize the target.", announce = "Lynx Rush", sound = true },
 	},
@@ -58,6 +62,7 @@ IPM:RegisterModule("za-halazzi", {
 IPM:RegisterModule("za-malacrass", {
 	name = "Zul'Aman - Hex Lord Malacrass",
 	description = "Starter timing pass for the spirit bolts and possessed adds.",
+	bossIds = { 24239 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Spirit Bolts", prompt = "Spirit Bolts - heal through the raid damage spike.", announce = "Spirit Bolts", sound = true },
 	},
@@ -71,6 +76,7 @@ IPM:RegisterModule("za-malacrass", {
 IPM:RegisterModule("za-zuljin", {
 	name = "Zul'Aman - Zul'jin",
 	description = "Starter timing pass for the phase swaps and final burn.",
+	bossIds = { 23863 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Whirlwind", prompt = "Whirlwind - keep melee out and protect the raid.", announce = "Whirlwind", sound = true },
 	},

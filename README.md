@@ -20,6 +20,7 @@ It is intentionally structured like a lightweight encounter framework:
 - In-game options window for enabling and disabling modules
 - Shared support layer for media and utility services
 - Leader tools, automarker support, and kill-time tracking
+- Post-fight report panel in the options window
 - Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
 
 ## Slash Commands
@@ -141,6 +142,7 @@ Use `/ipm options` to open the configuration window. From there you can:
 - keep utility modules disabled when you do not want them loaded for a night
 - use leader tools buttons for pull countdowns, ready checks, and kill recording
 - review kill-time history after a fight or by module name
+- browse saved kill history in the post-fight report panel
 
 Disabled modules remain registered, but `/ipm start <module>` will refuse to launch them until they are re-enabled.
 

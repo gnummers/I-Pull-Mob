@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-moroes", {
 	name = "Karazhan - Moroes",
 	description = "Starter Moroes module: Garrote cadence, add control, and execute reminders.",
+	bossIds = { 15687 },
 	cycles = {
 		garrote = { "Priest", "Paladin", "Shaman" },
 	},

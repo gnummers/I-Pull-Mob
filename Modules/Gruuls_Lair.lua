@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("gruuls-lair", {
 	name = "Gruul's Lair - Gruul the Dragonkiller",
 	description = "Starter Gruul module: Growth, Cave In, Hurtful Strike, and Shatter reminders.",
+	bossIds = { 19044 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Shatter", prompt = "Shatter - spread immediately and keep the raid moving.", announce = "Shatter incoming", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Cave In", prompt = "Cave In - move out of the void zone.", announce = "Cave In", sound = true },

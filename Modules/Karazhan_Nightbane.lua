@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-nightbane", {
 	name = "Karazhan - Nightbane",
 	description = "Starter Nightbane module: air phase and fear handling reminders.",
+	bossIds = { 17225, 17261 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Smoking Blast", prompt = "Smoking Blast - move the tank and keep the raid healthy.", announce = "Smoking Blast", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Charred Earth", prompt = "Charred Earth - move out of the fire patch.", announce = "Charred Earth", sound = true },

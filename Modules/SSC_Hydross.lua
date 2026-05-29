@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("ssc-hydross", {
 	name = "Hydross the Unstable",
 	description = "Starter timing pass for Hydross with mark swaps, tomb reminders, and phase transition prompts.",
+	bossIds = { 21216 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Mark of Hydross", prompt = "Mark swap - check tank positioning and resist cleanup.", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Water Tomb", prompt = "Water Tomb - heal the target and keep the raid spread.", announce = "Water Tomb", sound = true },

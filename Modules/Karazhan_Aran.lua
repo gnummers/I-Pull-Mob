@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-aran", {
 	name = "Karazhan - Shade of Aran",
 	description = "Starter Aran module: Flame Wreath, Blizzard, and Arcane Explosion reminders.",
+	bossIds = { 16524 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Flame Wreath", prompt = "Flame Wreath - stop moving immediately.", announce = "Flame Wreath", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Blizzard", prompt = "Blizzard - move to the safe zone.", announce = "Blizzard", sound = true },

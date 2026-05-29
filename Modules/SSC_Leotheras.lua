@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("ssc-leotheras", {
 	name = "Leotheras the Blind",
 	description = "Starter timing pass for human phase casts, Whirlwind warnings, and demon phase swaps.",
+	bossIds = { 21215 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Whirlwind", prompt = "Whirlwind - move out and keep ranged safe.", announce = "Whirlwind", sound = true },
 	},

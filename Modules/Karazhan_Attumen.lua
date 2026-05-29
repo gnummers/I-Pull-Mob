@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-attumen", {
 	name = "Karazhan - Attumen the Huntsman",
 	description = "Starter Attumen module: phase swap and charge reminders.",
+	bossIds = { 15550, 16152 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Berserker Charge", prompt = "Berserker Charge - move immediately and keep the tank safe.", announce = "Berserker Charge", sound = true },
 	},

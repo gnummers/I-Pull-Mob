@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-curator", {
 	name = "Karazhan - The Curator",
 	description = "Starter Curator module: flare waves, Evocation, and burn reminders.",
+	bossIds = { 15691 },
 	cycles = {
 		flare = { "Rogue", "Mage", "Shaman" },
 	},

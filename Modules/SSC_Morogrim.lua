@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("ssc-morogrim", {
 	name = "Morogrim Tidewalker",
 	description = "Starter timing pass for Watery Grave, Earthquake, and murloc wave movement.",
+	bossIds = { 21213 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Watery Grave", prompt = "Watery Grave - pick up the encased player and keep the raid spread.", announce = "Watery Grave", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Earthquake", prompt = "Earthquake - move the raid and avoid stacked damage.", announce = "Earthquake", sound = true },

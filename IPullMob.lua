@@ -101,6 +101,10 @@ local function GetDB()
 		db.killTimes = {}
 	end
 
+	if type(db.reportModuleId) ~= "string" then
+		db.reportModuleId = nil
+	end
+
 	if type(db.markerRules) ~= "table" then
 		db.markerRules = {}
 	end
@@ -847,6 +851,43 @@ local function GetKillHistory(id)
 	return history
 end
 
+local function GetOrderedModuleIds()
+	local names = {}
+	for id in pairs(Modules) do
+		table.insert(names, id)
+	end
+	table.sort(names)
+	return names
+end
+
+local function GetReportModuleId()
+	if state.encounterId then
+		return state.encounterId
+	end
+
+	local db = GetDB()
+	if type(db.reportModuleId) == "string" and db.reportModuleId ~= "" and Modules[db.reportModuleId] then
+		return db.reportModuleId
+	end
+
+	local names = GetOrderedModuleIds()
+	return names[1]
+end
+
+local function SetReportModuleId(id)
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId or not Modules[normalizedId] then
+		return false
+	end
+
+	GetDB().reportModuleId = normalizedId
+	if optionsFrame and optionsFrame:IsShown() and type(RefreshOptionsWindow) == "function" then
+		RefreshOptionsWindow()
+	end
+
+	return true
+end
+
 local function RecordKillTime(id, duration)
 	local normalizedId = NormalizeModuleId(id)
 	if not normalizedId then
@@ -886,19 +927,19 @@ local function FormatDuration(seconds)
 	return string.format("%dm %.1fs", minutes, remainder)
 end
 
-local function PrintKillSummary(id)
+local function BuildKillSummaryLines(id)
 	local normalizedId = NormalizeModuleId(id)
 	if not normalizedId then
-		return
+		return { "No encounter selected." }
 	end
 
 	local history = GetKillHistory(normalizedId)
 	if not history or #history == 0 then
-		Print(string.format("No kill history recorded for %s.", normalizedId))
-		return
+		return { string.format("No kill history recorded for %s.", normalizedId) }
 	end
 
 	local module = Modules[normalizedId]
+	local lines = {}
 	local best = history[1]
 	for i = 2, #history do
 		if history[i].duration < best.duration then
@@ -906,10 +947,23 @@ local function PrintKillSummary(id)
 		end
 	end
 
-	Print(string.format("%s best: %s (%d runs)", module and module.name or normalizedId, FormatDuration(best.duration), #history))
-	for i = 1, math.min(3, #history) do
-		local entry = history[i]
-		Print(string.format("  %d. %s", i, FormatDuration(entry.duration)))
+	table.insert(lines, string.format("%s", module and module.name or normalizedId))
+	table.insert(lines, string.format("Best: %s", FormatDuration(best.duration)))
+	table.insert(lines, string.format("Runs: %d", #history))
+	for i = 1, math.min(5, #history) do
+		table.insert(lines, string.format("%d. %s", i, FormatDuration(history[i].duration)))
+	end
+
+	return lines
+end
+
+local function BuildKillSummaryText(id)
+	return table.concat(BuildKillSummaryLines(id), "\n")
+end
+
+local function PrintKillSummary(id)
+	for _, line in ipairs(BuildKillSummaryLines(id)) do
+		Print(line)
 	end
 end
 
@@ -1289,7 +1343,7 @@ local function CreateOptionsWindow()
 	end
 
 	optionsFrame = CreateFrame("Frame", "IPullMobOptionsFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
-	optionsFrame:SetSize(520, 540)
+	optionsFrame:SetSize(700, 560)
 	optionsFrame:SetPoint("CENTER")
 	optionsFrame:SetMovable(true)
 	optionsFrame:SetClampedToScreen(true)
@@ -1473,6 +1527,88 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	optionsFrame.reportLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.reportLabel:SetPoint("TOPRIGHT", optionsFrame, "TOPRIGHT", -18, -52)
+	optionsFrame.reportLabel:SetText("Post-Fight Report")
+
+	optionsFrame.reportPanel = CreateFrame("Frame", nil, optionsFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	optionsFrame.reportPanel:SetSize(200, 250)
+	optionsFrame.reportPanel:SetPoint("TOPRIGHT", optionsFrame, "TOPRIGHT", -14, -72)
+	optionsFrame.reportPanel:SetBackdrop({
+		bgFile = [[Interface\Tooltips\UI-Tooltip-Background]],
+		edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+		tile = true,
+		tileSize = 12,
+		edgeSize = 12,
+		insets = { left = 4, right = 4, top = 4, bottom = 4 },
+	})
+	optionsFrame.reportPanel:SetBackdropColor(0.08, 0.08, 0.10, 0.92)
+	optionsFrame.reportPanel:SetBackdropBorderColor(0.35, 0.35, 0.45, 1)
+
+	optionsFrame.reportText = optionsFrame.reportPanel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	optionsFrame.reportText:SetPoint("TOPLEFT", 8, -8)
+	optionsFrame.reportText:SetPoint("BOTTOMRIGHT", -8, 48)
+	optionsFrame.reportText:SetJustifyH("LEFT")
+	optionsFrame.reportText:SetJustifyV("TOP")
+	optionsFrame.reportText:SetText("Select a module or start an encounter to see recent kill history.")
+
+	local function ShiftReportSelection(delta)
+		local names = GetOrderedModuleIds()
+		if #names == 0 then
+			return
+		end
+
+		local current = GetReportModuleId()
+		local index = 1
+		for i, id in ipairs(names) do
+			if id == current then
+				index = i
+				break
+			end
+		end
+
+		index = index + delta
+		if index < 1 then
+			index = #names
+		elseif index > #names then
+			index = 1
+		end
+
+		SetReportModuleId(names[index])
+	end
+
+	optionsFrame.reportPrev = CreateFrame("Button", nil, optionsFrame.reportPanel, "UIPanelButtonTemplate")
+	optionsFrame.reportPrev:SetSize(56, 20)
+	optionsFrame.reportPrev:SetPoint("BOTTOMLEFT", 8, 10)
+	optionsFrame.reportPrev:SetText("Prev")
+	optionsFrame.reportPrev:SetScript("OnClick", function()
+		ShiftReportSelection(-1)
+	end)
+
+	optionsFrame.reportNext = CreateFrame("Button", nil, optionsFrame.reportPanel, "UIPanelButtonTemplate")
+	optionsFrame.reportNext:SetSize(56, 20)
+	optionsFrame.reportNext:SetPoint("LEFT", optionsFrame.reportPrev, "RIGHT", 6, 0)
+	optionsFrame.reportNext:SetText("Next")
+	optionsFrame.reportNext:SetScript("OnClick", function()
+		ShiftReportSelection(1)
+	end)
+
+	optionsFrame.reportActive = CreateFrame("Button", nil, optionsFrame.reportPanel, "UIPanelButtonTemplate")
+	optionsFrame.reportActive:SetSize(68, 20)
+	optionsFrame.reportActive:SetPoint("LEFT", optionsFrame.reportNext, "RIGHT", 6, 0)
+	optionsFrame.reportActive:SetText("Active")
+	optionsFrame.reportActive:SetScript("OnClick", function()
+		if state.encounterId then
+			SetReportModuleId(state.encounterId)
+		end
+	end)
+
+	optionsFrame.reportHint = optionsFrame.reportPanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	optionsFrame.reportHint:SetPoint("BOTTOMLEFT", 8, -2)
+	optionsFrame.reportHint:SetWidth(184)
+	optionsFrame.reportHint:SetJustifyH("LEFT")
+	optionsFrame.reportHint:SetText("Preview recent kill times for the chosen module.")
+
 	local function MakeButton(buttonName, label, anchorPoint, relativeTo, relativePoint, x, y, width, onClick)
 		local button = CreateFrame("Button", buttonName, optionsFrame, "UIPanelButtonTemplate")
 		button:SetSize(width or 120, 22)
@@ -1558,7 +1694,7 @@ local function CreateOptionsWindow()
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
 	scrollFrame:SetPoint("TOPLEFT", 14, -334)
-	scrollFrame:SetPoint("BOTTOMRIGHT", -32, 14)
+	scrollFrame:SetPoint("BOTTOMRIGHT", -214, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
 	content:SetSize(1, 1)
@@ -1579,6 +1715,13 @@ local function CreateOptionsWindow()
 		optionsFrame.lockToggle:Refresh()
 		optionsFrame.scaleSlider:Refresh()
 		optionsFrame.volumeSlider:Refresh()
+		optionsFrame.reportText:SetText(BuildKillSummaryText(GetReportModuleId()))
+		optionsFrame.reportLabel:SetText(string.format("Post-Fight Report: %s", (function()
+			local id = GetReportModuleId()
+			local module = id and Modules[id]
+			return module and module.name or (id or "none")
+		end)()))
+		optionsFrame.reportHint:SetText(state.encounterId and "Showing the active encounter history." or "Use Prev / Next to browse saved histories, or Active during a fight.")
 
 		local names = {}
 		for id in pairs(Modules) do
@@ -1753,6 +1896,12 @@ local function RegisterAPI()
 		GetCurrentEncounter = function()
 			return state.encounterId, state.module, state.encounterStart
 		end,
+		GetReportModule = GetReportModuleId,
+		SetReportModule = function(_, id)
+			return SetReportModuleId(id)
+		end,
+		GetKillSummaryLines = BuildKillSummaryLines,
+		GetKillSummaryText = BuildKillSummaryText,
 		GetSupport = function()
 			return _G.IPullMobSupport
 		end,

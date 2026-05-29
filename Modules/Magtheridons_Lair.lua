@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("magtheridons-lair", {
 	name = "Magtheridon's Lair - Magtheridon",
 	description = "Starter Magtheridon module: cube rotations, Blast Nova, and Quake reminders.",
+	bossIds = { 17257 },
 	cycles = {
 		cube = { "Team A", "Team B", "Team C" },
 	},

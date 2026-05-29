@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-illhoof", {
 	name = "Terestian Illhoof",
 	description = "Starter timing pass for sacrifice, imp waves, and demonic chains.",
+	bossIds = { 15688 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Sacrifice", prompt = "Sacrifice - free the target and keep healing focused.", announce = "Sacrifice", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Demonic Chains", prompt = "Demonic Chains - break the target out and keep the add controlled.", announce = "Demonic Chains", sound = true },

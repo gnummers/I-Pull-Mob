@@ -6,6 +6,10 @@ end
 IPM:RegisterModule("ssc-vashj", {
 	name = "Lady Vashj",
 	description = "Starter timing pass for shock blasts, phase transition reminders, and core handling.",
+	bossIds = { 21212 },
+	autoMarkers = {
+		{ event = "SPELL_AURA_APPLIED", spellName = "Static Charge", icon = 8, target = "dest", clearOnRemove = true, announce = "Static Charge marked" },
+	},
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Shock Blast", prompt = "Shock Blast - tank check and healer attention.", announce = "Shock Blast", sound = true },
 		{ event = "SPELL_AURA_APPLIED", spellName = "Static Charge", prompt = "Static Charge - move out with the debuffed player.", announce = "Static Charge", sound = true },

@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("hyjal-rage-winterchill", {
 	name = "Mount Hyjal - Rage Winterchill",
 	description = "Starter timing pass for the opening Hyjal wave boss and its core damage checks.",
+	bossIds = { 17767 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Death and Decay", prompt = "Death and Decay - move the raid out immediately.", announce = "Death and Decay", sound = true },
 	},
@@ -19,6 +20,7 @@ IPM:RegisterModule("hyjal-rage-winterchill", {
 IPM:RegisterModule("hyjal-anetheron", {
 	name = "Mount Hyjal - Anetheron",
 	description = "Starter timing pass for the infernal and swarm pressure in Hyjal.",
+	bossIds = { 17808 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Carrion Swarm", prompt = "Carrion Swarm - brace the raid and heal through it.", announce = "Carrion Swarm", sound = true },
 	},
@@ -32,6 +34,7 @@ IPM:RegisterModule("hyjal-anetheron", {
 IPM:RegisterModule("hyjal-kazrogal", {
 	name = "Mount Hyjal - Kaz'rogal",
 	description = "Starter timing pass for mana burn management and tank stability.",
+	bossIds = { 17888 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "War Stomp", prompt = "War Stomp - stabilize after the hit and watch mana.", announce = "War Stomp", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Mark of Kaz'rogal", prompt = "Mark of Kaz'rogal - mana check and defensive cooldowns.", announce = "Mark of Kaz'rogal", sound = true },
@@ -46,6 +49,7 @@ IPM:RegisterModule("hyjal-kazrogal", {
 IPM:RegisterModule("hyjal-azgalor", {
 	name = "Mount Hyjal - Azgalor",
 	description = "Starter timing pass for doom, swarm, and ground pressure.",
+	bossIds = { 17842 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Rain of Fire", prompt = "Rain of Fire - move out of the patch.", announce = "Rain of Fire", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Howl of Azgalor", prompt = "Howl of Azgalor - stabilize the raid and keep tanks covered.", announce = "Howl of Azgalor", sound = true },
@@ -61,6 +65,7 @@ IPM:RegisterModule("hyjal-azgalor", {
 IPM:RegisterModule("hyjal-archimonde", {
 	name = "Mount Hyjal - Archimonde",
 	description = "Starter timing pass for Doomfire, Air Burst, and the final Hyjal burn.",
+	bossIds = { 17968 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellName = "Air Burst", prompt = "Air Burst - move fast and survive the drop.", announce = "Air Burst", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Doomfire", prompt = "Doomfire - move away from the flames immediately.", announce = "Doomfire", sound = true },

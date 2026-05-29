@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("tk-kaelthas", {
 	name = "Kael'thas Sunstrider",
 	description = "Starter timing pass for advisor burn, weapon phase, and final interrupt windows.",
+	bossIds = { 19622 },
 	cycles = {
 		kick = {},
 	},

@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-netherspite", {
 	name = "Karazhan - Netherspite",
 	description = "Starter Netherspite module: beam swap and portal cycle reminders.",
+	bossIds = { 15689 },
 	timeline = {
 		{ after = 15, label = "Portal Phase", prompt = "Assign beams and establish rotations" },
 		{ after = 35, label = "Portal Phase", prompt = "Swap beam users before stacks get high" },

@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-maiden", {
 	name = "Karazhan - Maiden of Virtue",
 	description = "Starter Maiden module: Holy Fire and Repentance reminders.",
+	bossIds = { 16457 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Holy Fire", prompt = "Holy Fire - get the target away from the raid.", announce = "Holy Fire", sound = true },
 		{ event = "SPELL_CAST_START", spellName = "Repentance", prompt = "Repentance - move to break it or prepare a self-heal.", announce = "Repentance incoming", sound = true },

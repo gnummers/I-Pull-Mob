@@ -6,6 +6,10 @@ end
 IPM:RegisterModule("tk-solarian", {
 	name = "High Astromancer Solarian",
 	description = "Starter timing pass for Wrath of the Astromancer, phase swaps, and add control.",
+	bossIds = { 18805 },
+	autoMarkers = {
+		{ event = "SPELL_AURA_APPLIED", spellName = "Wrath of the Astromancer", icon = 8, target = "dest", clearOnRemove = true, announce = "Wrath of the Astromancer marked" },
+	},
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellName = "Wrath of the Astromancer", prompt = "Wrath of the Astromancer - watch the debuffed player and spread immediately.", announce = "Wrath of the Astromancer", sound = true },
 	},

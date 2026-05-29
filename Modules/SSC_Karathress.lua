@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("ssc-karathress", {
 	name = "Fathom-Lord Karathress",
 	description = "Starter timing pass for add swaps, interrupt windows, and totem kill reminders.",
+	bossIds = { 21214 },
 	cycles = {
 		kick = {},
 	},
