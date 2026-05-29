@@ -92,7 +92,7 @@ IPM:RegisterModule("sw-twins", {
 
 IPM:RegisterModule("sw-muru", {
 	name = "Sunwell Plateau - M'uru",
-	description = "Imported timer pass for Darkness, add waves, and the Entropius transition.",
+	description = "Imported timer pass for Darkness, add waves, Black Hole, and the Entropius transition.",
 	bossIds = { 25741, 25840 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45996 }, prompt = "Darkness - heal through the cast and keep the boss stable.", announce = "Darkness", sound = true },
