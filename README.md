@@ -35,6 +35,7 @@ It is intentionally structured like a lightweight encounter framework:
 - `/ipm cycles` - list configured interrupt cycles
 - `/ipm options` - open the module and settings window
 - `/ipm pull` - start the pull countdown module
+- `/ipm pull cancel` - cancel the pull countdown
 - `/ipm break` - start the break countdown module
 - `/ipm break cancel` - cancel the break countdown
 - `/ipm range <yards>` - start the minimal range helper
@@ -150,6 +151,7 @@ Use `/ipm options` to open the configuration window. From there you can:
 - toggle core behaviors like alert sounds, auto-show, and window lock
 - adjust the frame scale
 - adjust the alert volume used for addon sounds
+- adjust the range helper yard value
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
 - use leader tools buttons for pull countdowns, ready checks, and kill recording

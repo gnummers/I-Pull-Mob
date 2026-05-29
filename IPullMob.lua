@@ -1033,6 +1033,17 @@ local function StartLeaderPull()
 	return started
 end
 
+local function CancelLeaderPull()
+	if state.encounterId ~= "pull-timers" then
+		Print("No active pull timer to cancel.")
+		return false
+	end
+
+	ClearEncounter(false)
+	Print("Pull timer cancelled.")
+	return true
+end
+
 local function StartBreakTimer()
 	local started = StartEncounter("break-timers")
 	if not started then
@@ -1059,6 +1070,7 @@ local function StartRangeHelper(rangeValue)
 		return false
 	end
 
+	normalizedRange = math.max(5, math.min(100, math.floor(normalizedRange + 0.5)))
 	GetDB().rangeValue = normalizedRange
 	local started = StartEncounter("range-helper")
 	if not started then
@@ -1100,8 +1112,30 @@ local function GetRangeValue()
 end
 
 local function SetRangeValue(value)
-	GetDB().rangeValue = tonumber(value)
+	local normalized = tonumber(value)
+	if normalized then
+		normalized = math.max(5, math.min(100, math.floor(normalized + 0.5)))
+	end
+	GetDB().rangeValue = normalized
 	return GetDB().rangeValue
+end
+
+local function GetPersistentPromptText(module)
+	if not module then
+		return nil
+	end
+
+	local promptText = module.persistentPromptText
+	if type(promptText) == "function" then
+		local ok, result = pcall(promptText, module, state)
+		promptText = ok and result or nil
+	end
+
+	if type(promptText) == "string" and promptText ~= "" then
+		return promptText
+	end
+
+	return nil
 end
 
 local function StartEncounter(encounterId)
@@ -1136,14 +1170,9 @@ local function StartEncounter(encounterId)
 		SafeCall(module.onStart, module, state)
 	end
 
-	if module.persistentPromptText then
-		local promptText = module.persistentPromptText
-		if type(promptText) == "function" then
-			local ok, result = pcall(promptText, module, state)
-			promptText = ok and result or nil
-		end
-
-		if type(promptText) == "string" and promptText ~= "" then
+	if module.persistentPrompt then
+		local promptText = GetPersistentPromptText(module)
+		if promptText then
 			SetPrompt(promptText)
 		end
 	end
@@ -1211,7 +1240,12 @@ local function UpdateBars()
 		bars[i].promptText:SetText("")
 	end
 
-	if state.encounterId and visibleCount == 0 and not (state.module and state.module.persistentPrompt) then
+	if state.module and state.module.persistentPrompt then
+		local promptText = GetPersistentPromptText(state.module)
+		if promptText then
+			SetPrompt(promptText)
+		end
+	elseif state.encounterId and visibleCount == 0 then
 		SetPrompt("Encounter complete")
 	end
 end
@@ -1255,7 +1289,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm break, /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm pull cancel, /ipm break, /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -1274,6 +1308,11 @@ local function HandleSlash(msg)
 
 	if lower == "pull" then
 		StartLeaderPull()
+		return
+	end
+
+	if lower == "pull cancel" then
+		CancelLeaderPull()
 		return
 	end
 
@@ -1652,6 +1691,34 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	optionsFrame.rangeSlider = MakeSlider(
+		"IPullMobOptionsRangeSlider",
+		"Range helper",
+		"TOPLEFT",
+		optionsFrame.volumeSlider,
+		"BOTTOMLEFT",
+		0,
+		-30,
+		5,
+		100,
+		1,
+		function()
+			return GetDB().rangeValue or 8
+		end,
+		function(value)
+			GetDB().rangeValue = value
+			if state.encounterId == "range-helper" and state.module and state.module.persistentPrompt then
+				local promptText = GetPersistentPromptText(state.module)
+				if promptText then
+					SetPrompt(promptText)
+				end
+			end
+		end,
+		function(value)
+			return string.format("%d yd", math.floor(value + 0.5))
+		end
+	)
+
 	optionsFrame.reportLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	optionsFrame.reportLabel:SetPoint("TOPRIGHT", optionsFrame, "TOPRIGHT", -18, -52)
 	optionsFrame.reportLabel:SetText("Post-Fight Report")
@@ -1811,7 +1878,7 @@ local function CreateOptionsWindow()
 	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.summaryButton, "RIGHT", 12, 0)
 	optionsFrame.toolsHint:SetWidth(250)
 	optionsFrame.toolsHint:SetJustifyH("LEFT")
-	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls and save kill times.")
+	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, cancel timers, and save kill times.")
 
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -310)
@@ -1840,6 +1907,7 @@ local function CreateOptionsWindow()
 		optionsFrame.lockToggle:Refresh()
 		optionsFrame.scaleSlider:Refresh()
 		optionsFrame.volumeSlider:Refresh()
+		optionsFrame.rangeSlider:Refresh()
 		optionsFrame.reportText:SetText(BuildKillSummaryText(GetReportModuleId()))
 		optionsFrame.reportLabel:SetText(string.format("Post-Fight Report: %s", (function()
 			local id = GetReportModuleId()
