@@ -40,10 +40,11 @@ IPM:RegisterModule("sw-kalecgos", {
 
 IPM:RegisterModule("sw-felmyst", {
 	name = "Sunwell Plateau - Felmyst",
-	description = "Imported timer pass for Gas Nova, Encapsulate, Demonic Vapor, and phase timing.",
+	description = "Imported timer pass for Gas Nova, Encapsulate, Demonic Vapor, Corrosion, and phase timing.",
 	bossIds = { 25038 },
 	autoMarkers = {
-		{ event = "SPELL_DAMAGE", spellIds = { 45661 }, icon = 1, target = "dest", clearOnRemove = true, announce = "Encapsulate marked" },
+		{ event = "SPELL_DAMAGE", spellIds = { 45661 }, icon = 7, target = "dest", clearOnRemove = true, announce = "Encapsulate marked" },
+		{ event = "SPELL_SUMMON", spellIds = { 45392 }, icon = 8, target = "dest", clearOnRemove = true, announce = "Demonic Vapor marked" },
 	},
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellIds = { 45855 }, prompt = "Gas Nova - heal through the blast and reset positioning.", announce = "Gas Nova", sound = true },
