@@ -9,11 +9,15 @@ IPM:RegisterModule("magtheridons-lair", {
 	cycles = {
 		cube = { "Team A", "Team B", "Team C" },
 	},
+	combatLogTriggers = {
+		{ event = "SPELL_CAST_START", spellName = "Blast Nova", prompt = "Blast Nova - click cubes now.", announce = "Blast Nova incoming", sound = true, interruptCycle = "cube" },
+		{ event = "SPELL_CAST_START", spellName = "Quake", prompt = "Quake - stop casting and stabilize.", announce = "Quake", sound = true },
+	},
 	timeline = {
 		{
 			after = 45,
 			label = "Blast Nova 1",
-			prompt = "Click cubes now",
+			prompt = "Click cubes now.",
 			interruptCycle = "cube",
 			announce = "Blast Nova incoming",
 			sound = true,
@@ -21,16 +25,16 @@ IPM:RegisterModule("magtheridons-lair", {
 		{
 			after = 95,
 			label = "Blast Nova 2",
-			prompt = "Click cubes now",
+			prompt = "Click cubes now.",
 			interruptCycle = "cube",
 			announce = "Blast Nova incoming",
 			sound = true,
 		},
-		{ after = 120, label = "Quake", prompt = "Stop casting and stabilize" },
+		{ after = 120, label = "Quake", prompt = "Stop casting and stabilize." },
 		{
 			after = 145,
 			label = "Blast Nova 3",
-			prompt = "Click cubes now",
+			prompt = "Click cubes now.",
 			interruptCycle = "cube",
 			announce = "Blast Nova incoming",
 			sound = true,
@@ -38,7 +42,7 @@ IPM:RegisterModule("magtheridons-lair", {
 		{
 			after = 195,
 			label = "Blast Nova 4",
-			prompt = "Click cubes now",
+			prompt = "Click cubes now.",
 			interruptCycle = "cube",
 			announce = "Blast Nova incoming",
 			sound = true,
