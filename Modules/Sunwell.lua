@@ -22,13 +22,17 @@ IPM:RegisterModule("sw-brutallus", {
 
 IPM:RegisterModule("sw-kalecgos", {
 	name = "Sunwell Plateau - Kalecgos",
-	description = "Imported timer pass for portals, Arcane Buffet, Frost Breath, and Wild Magic handling.",
+	description = "Imported timer pass for portals, Arcane Buffet, Frost Breath, Wild Magic, and curse handling.",
 	bossIds = { 24850, 24892 },
+	autoMarkers = {
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 46021 }, icon = 7, target = "dest", clearOnRemove = true, announce = "Spectral Realm marked" },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45032, 45034 }, icon = 8, target = "dest", clearOnRemove = true, announce = "Curse marked" },
+	},
 	combatLogTriggers = {
-		{ event = "SPELL_CAST_START", spellIds = { 44799 }, prompt = "Frost Breath - heal the tank and keep buffs ready.", announce = "Frost Breath", sound = true },
-		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45018 }, prompt = "Arcane Buffet - stack reset and tank stabilization.", announce = "Arcane Buffet", sound = true },
-		{ event = "SPELL_AURA_APPLIED", spellIds = { 46021 }, prompt = "Spectral Realm - handle portal groups and assignments.", announce = "Spectral Realm", sound = true },
-		{ event = "SPELL_AURA_APPLIED", spellIds = { 45032, 45034 }, prompt = "Curse of Boundless Agony - move out and resolve the curse.", announce = "Curse of Boundless Agony", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 44799 }, prompt = "Frost Breath - tank heal and cooldown check.", announce = "Frost Breath", sound = true },
+		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45018 }, prompt = "Arcane Buffet - reset stacks or swap targets before it climbs.", announce = "Arcane Buffet", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 46021 }, prompt = "Spectral Realm - note the target and keep portal assignments clean.", announce = "Spectral Realm", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45032, 45034 }, prompt = "Curse of Boundless Agony - move the marked player out now.", announce = "Curse of Boundless Agony", sound = true },
 	},
 	timeline = {
 		{ after = 8, label = "Pull setup", prompt = "Open with portal assignments and tank rotation ready.", sound = true },
