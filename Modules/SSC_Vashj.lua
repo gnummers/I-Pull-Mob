@@ -5,14 +5,16 @@ end
 
 IPM:RegisterModule("ssc-vashj", {
 	name = "Lady Vashj",
-	description = "Starter timing pass for shock blasts, phase transition reminders, and core handling.",
+	description = "Imported timing pass for Shock Blast, Static Charge, Entangle, and phase transition reminders.",
 	bossIds = { 21212 },
 	autoMarkers = {
-		{ event = "SPELL_AURA_APPLIED", spellName = "Static Charge", icon = 8, target = "dest", clearOnRemove = true, announce = "Static Charge marked" },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 38280 }, icon = 8, target = "dest", clearOnRemove = true, announce = "Static Charge marked" },
 	},
 	combatLogTriggers = {
-		{ event = "SPELL_CAST_START", spellName = "Shock Blast", prompt = "Shock Blast - tank check and healer attention.", announce = "Shock Blast", sound = true },
-		{ event = "SPELL_AURA_APPLIED", spellName = "Static Charge", prompt = "Static Charge - move out with the debuffed player.", announce = "Static Charge", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 38253 }, prompt = "Shock Blast - tank check and healer attention.", announce = "Shock Blast", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 38280 }, prompt = "Static Charge - move out with the debuffed player.", announce = "Static Charge", sound = true },
+		{ event = "SPELL_CAST_SUCCESS", spellIds = { 38316 }, prompt = "Entangle - recover quickly and keep the raid stable.", announce = "Entangle", sound = true },
+		{ event = "SPELL_AURA_REMOVED", spellIds = { 38112 }, prompt = "Barrier down - expect the next phase pressure soon.", announce = "Barrier down", sound = true },
 	},
 	timeline = {
 		{ after = 6, label = "Phase 1 setup", prompt = "Spread for Phase 1 and keep Grounding / tank coverage ready.", sound = true },
