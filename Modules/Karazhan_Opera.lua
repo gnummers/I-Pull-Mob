@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-opera", {
 	name = "The Opera Event",
 	description = "A generic timing pass for the Karazhan Opera event rotations.",
+	encounterEndIds = { 655 },
 	timeline = {
 		{ after = 8, label = "Stage set", prompt = "Opera event starting - identify the performance and assign swaps.", sound = true },
 		{ after = 20, label = "First mechanic", prompt = "Handle the first Opera mechanic and keep the stage clear.", sound = true },

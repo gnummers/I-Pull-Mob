@@ -787,6 +787,24 @@ local function HandleCombatLogEvent()
 	end
 end
 
+local function HandleEncounterEnd(encounterId, status)
+	local module = state.module
+	if not module or type(module.encounterEndIds) ~= "table" then
+		return
+	end
+
+	for _, id in ipairs(module.encounterEndIds) do
+		if tonumber(id) == tonumber(encounterId) then
+			if tonumber(status) ~= 0 then
+				state.encounterFinished = true
+				state.encounterFinishReason = "encounter end"
+				ClearEncounter(true)
+			end
+			return
+		end
+	end
+end
+
 local function ClearEncounter(showComplete)
 	if showComplete and state.encounterId then
 		FinishEncounter(state.encounterFinished == true, state.encounterFinishReason or "encounter finished")
@@ -1789,9 +1807,10 @@ end
 local function RegisterEventHandlers()
 	Fojiji:RegisterEvent("PLAYER_LOGIN")
 	Fojiji:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	Fojiji:RegisterEvent("ENCOUNTER_END")
 	Fojiji:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Fojiji:RegisterEvent("PLAYER_REGEN_ENABLED")
-	Fojiji:SetScript("OnEvent", function(_, event)
+	Fojiji:SetScript("OnEvent", function(_, event, ...)
 		if event == "PLAYER_LOGIN" then
 			GetDB()
 			UpdateScale()
@@ -1803,6 +1822,11 @@ local function RegisterEventHandlers()
 			if state.encounterId then
 				HandleCombatLogEvent()
 			end
+			return
+		end
+
+		if event == "ENCOUNTER_END" then
+			HandleEncounterEnd(...)
 			return
 		end
 

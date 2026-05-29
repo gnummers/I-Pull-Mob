@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("kara-chess", {
 	name = "Karazhan - Chess Event",
 	description = "Starter Chess Event module: board control reminders.",
+	encounterEndIds = { 660 },
 	timeline = {
 		{ after = 5, label = "Start", prompt = "Open with your assigned piece." },
 		{ after = 20, label = "Board pressure", prompt = "Keep pushing the enemy backline." },

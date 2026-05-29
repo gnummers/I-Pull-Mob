@@ -117,7 +117,7 @@ The addon ships with starter modules:
 
 These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon, plus a starter Sunwell import pass for the full Sunwell raid roster.
 
-Note: `kara-chess` and `kara-opera` are special Karazhan event encounters. They remain manual-recording edge cases for kill history because the installed DBM and BigWigs sources treat them as shared/special-event encounters rather than a normal single-boss death.
+Note: `kara-chess` and `kara-opera` are special Karazhan event encounters. They finish through encounter-end tracking rather than a normal single-boss death, so the addon handles them with dedicated event-completion logic.
 
 ## Module Model
 
@@ -128,6 +128,7 @@ Each raid module can define:
 - `timeline` entries with `after`, `label`, `prompt`, `announce`, `sound`, `interruptCycle`, `repeatCount`, `every`, and `until`
 - `combatLogTriggers` entries for cast-start and aura-based prompts that should fire from actual combat log events
 - `bossIds` for auto-detecting boss deaths and recording kill times
+- `encounterEndIds` for special event encounters that should finish on `ENCOUNTER_END`
 - `autoMarkers` for assigning raid markers from combat-log events
 - optional hooks like `onStart`, `onSchedule`, `onEvent`, and `onCombatLog`
 

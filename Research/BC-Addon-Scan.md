@@ -103,7 +103,7 @@ This note captures the highest-value timer and mechanic data extracted from the 
 
 - `Chess` has a DBM encounter ID, but it is still a special event with shared behavior rather than a normal boss kill.
 - `Romulo and Julianne` and `Wizard of Oz` are treated as shared Karazhan event modules in both DBM and BigWigs, which is why they are poor candidates for naïve `bossIds` kill recording.
-- Practical takeaway: keep Karazhan `Opera` and `Chess` as manual kill-history entries unless you build event-specific completion logic.
+- Practical takeaway: Karazhan `Opera` and `Chess` should be handled with event-specific completion logic, not naïve single-mob death tracking.
 
 ## Practical Takeaways for I Pull Mob
 
