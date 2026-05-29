@@ -66,7 +66,7 @@ IPM:RegisterModule("hyjal-archimonde", {
 		{ event = "SPELL_CAST_START", spellName = "Doomfire", prompt = "Doomfire - move away from the flames immediately.", announce = "Doomfire", sound = true },
 	},
 	timeline = {
-		{ after = 12, label = "Pull setup", prompt = "Spread out and keep the doomfire lane clear.", sound = true },
+		{ after = 12, label = "Pull setup", prompt = "Spread out and keep the Doomfire lane clear.", sound = true },
 		{ after = 45, label = "Ground pressure", prompt = "Watch your feet and keep the raid stabilized.", sound = true },
 		{ after = 90, label = "Final burn", prompt = "Prepare defensive cooldowns for the last burn window.", sound = true },
 	},
