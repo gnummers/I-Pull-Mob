@@ -22,6 +22,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Shared media defaults that prefer FojjiCore-style sound names when available
 - Leader tools, automarker support, and kill-time tracking
 - Break countdown and minimal range helper utilities
+- Command-center buttons and fields for the slash-command set
 - Post-fight report panel in the options window
 - Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
 
@@ -159,6 +160,7 @@ Use `/ipm options` to open the configuration window. From there you can:
 - start or cancel the range helper from the options window
 - launch preset break timers from the options window
 - select and preview the alert sound alias from the options window
+- use the command center to run help, demo, stop, modules, cycles, leader, start, summary, enable, disable, and cycle-management actions
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
 - use leader tools buttons for pull countdowns, ready checks, and kill recording
@@ -181,6 +183,7 @@ Disabled modules remain registered, but `/ipm start <module>` will refuse to lau
 - Support file: `IPullMobSupport.lua`
 - Encounter modules: `Modules\*.lua`
 - Research notes: `Research\*.md`
+- Roadmap: `ROADMAP.md`
 
 ## Next Step
 

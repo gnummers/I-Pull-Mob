@@ -1454,7 +1454,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm pull cancel, /ipm break [minutes], /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm pull cancel, /ipm break [minutes], /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock. Most commands also have buttons or fields in /ipm options.")
 end
 
 local function HandleSlash(msg)
@@ -1678,7 +1678,7 @@ local function CreateOptionsWindow()
 	end
 
 	optionsFrame = CreateFrame("Frame", "IPullMobOptionsFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
-	optionsFrame:SetSize(700, 560)
+	optionsFrame:SetSize(700, 740)
 	optionsFrame:SetPoint("CENTER")
 	optionsFrame:SetMovable(true)
 	optionsFrame:SetClampedToScreen(true)
@@ -1981,6 +1981,23 @@ local function CreateOptionsWindow()
 		return button
 	end
 
+	local function MakeEditBox(boxName, width, anchorPoint, relativeTo, relativePoint, x, y, defaultText)
+		local box = CreateFrame("EditBox", boxName, optionsFrame, "InputBoxTemplate")
+		box:SetSize(width, 20)
+		box:SetPoint(anchorPoint, relativeTo, relativePoint, x, y)
+		box:SetAutoFocus(false)
+		box:SetTextInsets(6, 6, 3, 3)
+		box:SetFontObject("GameFontHighlightSmall")
+		box:SetText(defaultText or "")
+		box:SetScript("OnEscapePressed", function(self)
+			self:ClearFocus()
+		end)
+		box:SetScript("OnEnterPressed", function(self)
+			self:ClearFocus()
+		end)
+		return box
+	end
+
 	optionsFrame.rangeStartButton = MakeButton(
 		"IPullMobRangeStartButton",
 		"Start",
@@ -2201,18 +2218,310 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	optionsFrame.commandLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.commandLabel:SetPoint("TOPLEFT", optionsFrame.breakPresetCancel, "BOTTOMLEFT", 0, -16)
+	optionsFrame.commandLabel:SetText("Command Center")
+
+	optionsFrame.commandHint = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	optionsFrame.commandHint:SetPoint("LEFT", optionsFrame.commandLabel, "RIGHT", 8, 0)
+	optionsFrame.commandHint:SetWidth(260)
+	optionsFrame.commandHint:SetJustifyH("LEFT")
+	optionsFrame.commandHint:SetText("Use the report panel selection for start, summary, enable, and disable actions.")
+
+	optionsFrame.helpButton = MakeButton(
+		"IPullMobHelpButton",
+		"Help",
+		"TOPLEFT",
+		optionsFrame.commandLabel,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		58,
+		function()
+			ShowHelp()
+		end
+	)
+
+	optionsFrame.demoButton = MakeButton(
+		"IPullMobDemoButton",
+		"Demo",
+		"LEFT",
+		optionsFrame.helpButton,
+		"RIGHT",
+		6,
+		0,
+		58,
+		function()
+			StartEncounter("demo")
+		end
+	)
+
+	optionsFrame.stopButton = MakeButton(
+		"IPullMobStopButton",
+		"Stop",
+		"LEFT",
+		optionsFrame.demoButton,
+		"RIGHT",
+		6,
+		0,
+		58,
+		function()
+			ClearEncounter(false)
+			Print("Stopped current module.")
+		end
+	)
+
+	optionsFrame.modulesButton = MakeButton(
+		"IPullMobModulesButton",
+		"Modules",
+		"LEFT",
+		optionsFrame.stopButton,
+		"RIGHT",
+		6,
+		0,
+		66,
+		function()
+			ListModules()
+		end
+	)
+
+	optionsFrame.cyclesButton = MakeButton(
+		"IPullMobCyclesButton",
+		"Cycles",
+		"LEFT",
+		optionsFrame.modulesButton,
+		"RIGHT",
+		6,
+		0,
+		58,
+		function()
+			ListCycles()
+		end
+	)
+
+	optionsFrame.leaderToolsButton = MakeButton(
+		"IPullMobLeaderToolsButton",
+		"Leader",
+		"LEFT",
+		optionsFrame.cyclesButton,
+		"RIGHT",
+		6,
+		0,
+		58,
+		function()
+			PrintRaidLeaderTools()
+		end
+	)
+
+	optionsFrame.startSelectedButton = MakeButton(
+		"IPullMobStartSelectedButton",
+		"Start Sel",
+		"TOPLEFT",
+		optionsFrame.helpButton,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		74,
+		function()
+			local id = GetReportModuleId()
+			if id then
+				StartEncounter(id)
+			else
+				Print("No module selected.")
+			end
+		end
+	)
+
+	optionsFrame.summarySelectedButton = MakeButton(
+		"IPullMobSummarySelectedButton",
+		"Summary",
+		"LEFT",
+		optionsFrame.startSelectedButton,
+		"RIGHT",
+		6,
+		0,
+		74,
+		function()
+			local id = GetReportModuleId()
+			if id then
+				PrintKillSummary(id)
+			else
+				Print("No module selected.")
+			end
+		end
+	)
+
+	optionsFrame.enableSelectedButton = MakeButton(
+		"IPullMobEnableSelectedButton",
+		"Enable Sel",
+		"LEFT",
+		optionsFrame.summarySelectedButton,
+		"RIGHT",
+		6,
+		0,
+		80,
+		function()
+			local id = GetReportModuleId()
+			if id then
+				SetModuleEnabled(id, true)
+				Print(string.format("Enabled module %s.", NormalizeModuleId(id)))
+			else
+				Print("No module selected.")
+			end
+		end
+	)
+
+	optionsFrame.disableSelectedButton = MakeButton(
+		"IPullMobDisableSelectedButton",
+		"Disable Sel",
+		"LEFT",
+		optionsFrame.enableSelectedButton,
+		"RIGHT",
+		6,
+		0,
+		86,
+		function()
+			local id = GetReportModuleId()
+			if id then
+				SetModuleEnabled(id, false)
+				Print(string.format("Disabled module %s.", NormalizeModuleId(id)))
+			else
+				Print("No module selected.")
+			end
+		end
+	)
+
+	optionsFrame.cycleLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.cycleLabel:SetPoint("TOPLEFT", optionsFrame.startSelectedButton, "BOTTOMLEFT", 0, -12)
+	optionsFrame.cycleLabel:SetText("Cycle Tools")
+
+	optionsFrame.cycleNameBox = MakeEditBox(
+		"IPullMobCycleNameBox",
+		100,
+		"TOPLEFT",
+		optionsFrame.cycleLabel,
+		"BOTTOMLEFT",
+		0,
+		-4,
+		"kick"
+	)
+
+	optionsFrame.cyclePlayerBox = MakeEditBox(
+		"IPullMobCyclePlayerBox",
+		110,
+		"LEFT",
+		optionsFrame.cycleNameBox,
+		"RIGHT",
+		8,
+		0,
+		""
+	)
+	optionsFrame.cycleNameBox:SetScript("OnEnterPressed", function()
+		optionsFrame.cyclePlayerBox:SetFocus()
+	end)
+
+	local function GetCycleInputs()
+		local cycleName = optionsFrame.cycleNameBox:GetText() or ""
+		local playerName = optionsFrame.cyclePlayerBox:GetText() or ""
+		cycleName = cycleName:gsub("^%s+", ""):gsub("%s+$", "")
+		playerName = playerName:gsub("^%s+", ""):gsub("%s+$", "")
+		if cycleName == "" then
+			cycleName = "kick"
+		end
+		return cycleName, playerName
+	end
+
+	optionsFrame.cycleAddButton = MakeButton(
+		"IPullMobCycleAddButton",
+		"Add",
+		"LEFT",
+		optionsFrame.cyclePlayerBox,
+		"RIGHT",
+		8,
+		0,
+		48,
+		function()
+			local cycleName, playerName = GetCycleInputs()
+			if playerName == "" then
+				Print("Usage: cycle tools need a player name.")
+				return
+			end
+
+			local cycle = GetCycleState(cycleName)
+			table.insert(cycle.members, playerName)
+			Print(string.format("Added %s to cycle %s.", playerName, cycleName))
+		end
+	)
+	optionsFrame.cyclePlayerBox:SetScript("OnEnterPressed", function()
+		optionsFrame.cycleAddButton:Click()
+	end)
+
+	optionsFrame.cycleListButton = MakeButton(
+		"IPullMobCycleListButton",
+		"List",
+		"LEFT",
+		optionsFrame.cycleAddButton,
+		"RIGHT",
+		4,
+		0,
+		48,
+		function()
+			local cycleName = GetCycleInputs()
+			local cycle = GetCycleState(cycleName)
+			Print(string.format("%s: %s", cycleName, #cycle.members > 0 and table.concat(cycle.members, ", ") or "(empty)"))
+		end
+	)
+
+	optionsFrame.cycleNextButton = MakeButton(
+		"IPullMobCycleNextButton",
+		"Next",
+		"LEFT",
+		optionsFrame.cycleListButton,
+		"RIGHT",
+		4,
+		0,
+		48,
+		function()
+			local cycleName = GetCycleInputs()
+			local nextName = AdvanceInterruptCycle(cycleName)
+			if nextName then
+				Print(string.format("Next interrupt for %s: %s", cycleName, nextName))
+			else
+				Print(string.format("Cycle %s has no members.", cycleName))
+			end
+		end
+	)
+
+	optionsFrame.cycleClearButton = MakeButton(
+		"IPullMobCycleClearButton",
+		"Clear",
+		"LEFT",
+		optionsFrame.cycleNextButton,
+		"RIGHT",
+		4,
+		0,
+		52,
+		function()
+			local cycleName = GetCycleInputs()
+			local cycle = GetCycleState(cycleName)
+			cycle.members = {}
+			cycle.index = 0
+			Print(string.format("Cleared cycle %s.", cycleName))
+		end
+	)
+
 	optionsFrame.toolsHint = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.summaryButton, "RIGHT", 12, 0)
-	optionsFrame.toolsHint:SetWidth(250)
+	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.cycleClearButton, "RIGHT", 12, 0)
+	optionsFrame.toolsHint:SetWidth(220)
 	optionsFrame.toolsHint:SetJustifyH("LEFT")
-	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, manage range, preview sounds, and save kill times.")
+	optionsFrame.toolsHint:SetText("Report selection drives start, summary, enable, and disable.")
 
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -395)
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame.cycleLabel, "BOTTOMLEFT", 0, -18)
 	optionsFrame.modulesLabel:SetText("Modules")
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", 14, -419)
+	scrollFrame:SetPoint("TOPLEFT", 14, -444)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -214, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
@@ -2243,7 +2552,7 @@ local function CreateOptionsWindow()
 			local module = id and Modules[id]
 			return module and module.name or (id or "none")
 		end)()))
-		optionsFrame.reportHint:SetText(state.encounterId and "Showing the active encounter history." or "Use Prev / Next to browse saved histories, or Active during a fight.")
+		optionsFrame.reportHint:SetText(state.encounterId and "Showing the active encounter history." or "Use Prev / Next to browse saved histories. This selection also drives the command center.")
 
 		local names = {}
 		for id in pairs(Modules) do

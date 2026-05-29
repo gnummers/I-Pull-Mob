@@ -55,6 +55,7 @@ Deliverables:
 
 - refine pull, ready check, break, and kill-recording flows
 - keep the options window usable during combat and between pulls
+- surface the slash-command set in the options window with buttons and small form fields
 - continue improving sound alias selection and preview behavior
 - expand shared media aliases only where they improve raid communication
 - add any remaining leader prompts that reduce raid lead friction
@@ -91,6 +92,7 @@ Deliverables:
 - keep the options window consistent in layout and terminology
 - make saved settings easy to understand and maintain
 - add or refine controls for range value, break presets, sound presets, and module enablement
+- keep the command center aligned with the slash commands so the GUI stays authoritative
 - improve post-fight report presentation where it helps decision-making
 
 Exit criteria:
