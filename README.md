@@ -19,6 +19,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
 - Shared support layer for media and utility services
+- Shared media defaults that prefer FojjiCore-style sound names when available
 - Leader tools, automarker support, and kill-time tracking
 - Post-fight report panel in the options window
 - Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
@@ -33,6 +34,7 @@ It is intentionally structured like a lightweight encounter framework:
 - `/ipm cycles` - list configured interrupt cycles
 - `/ipm options` - open the module and settings window
 - `/ipm pull` - start the pull countdown module
+- `/ipm break` - start the break countdown module
 - `/ipm ready` - send a ready check
 - `/ipm kill` - record the current encounter as a kill and save the time
 - `/ipm summary [module]` - print kill history for the current or named module
@@ -67,6 +69,7 @@ The addon ships with starter modules:
 - `maulgar` - High King Maulgar
 - `magtheridons-lair` - Magtheridon, with Blast Nova cube rotations and a Quake reminder
 - `pull-timers` - a simple pull countdown module
+- `break-timers` - a fixed break countdown module
 - `reminder-popups` - generic pre-pull or mid-raid reminder prompts
 - `taunt-alerter` - generic tank swap reminders
 - `raid-leader-tools` - shared pull, ready, and leader reminders

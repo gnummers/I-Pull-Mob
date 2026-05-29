@@ -9,6 +9,8 @@ if type(Support) ~= "table" then
 	_G.IPullMobSupport = Support
 end
 
+local SharedMedia = LibStub and LibStub("LibSharedMedia-3.0", true) or nil
+
 Support.media = type(Support.media) == "table" and Support.media or {}
 Support.utilities = type(Support.utilities) == "table" and Support.utilities or {}
 
@@ -45,6 +47,18 @@ function Support:GetMedia(kind, key)
 	return bucket[key]
 end
 
+function Support:ResolveMedia(kind, key)
+	local value = self:GetMedia(kind, key)
+	if type(value) == "string" and SharedMedia and (kind == "sounds" or kind == "sound") then
+		local fetched = SharedMedia:Fetch("sound", value, true)
+		if fetched then
+			return fetched
+		end
+	end
+
+	return value
+end
+
 function Support:RegisterUtility(name, func)
 	if type(name) ~= "string" or name == "" or type(func) ~= "function" then
 		return false
@@ -68,9 +82,9 @@ function Support:CallUtility(name, ...)
 	return nil
 end
 
-Support:RegisterMedia("sounds", "alert", 8959)
-Support:RegisterMedia("sounds", "pull", 8959)
-Support:RegisterMedia("sounds", "warning", 8959)
+Support:RegisterMedia("sounds", "alert", "fojji Bell")
+Support:RegisterMedia("sounds", "pull", "fojji Beep")
+Support:RegisterMedia("sounds", "warning", "fojji Interrupt")
 Support:RegisterMedia("textures", "warning", "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew")
 Support:RegisterMedia("textures", "pull", "Interface\\Icons\\INV_Misc_QuestionMark")
 Support:RegisterMedia("textures", "ready", "Interface\\RaidFrame\\ReadyCheck-Ready")

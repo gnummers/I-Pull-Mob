@@ -144,8 +144,12 @@ local function PlayAlertSound()
 
 	if type(PlaySound) == "function" then
 		local alertSound = 8959
-		if type(_G.IPullMobSupport) == "table" and type(_G.IPullMobSupport.GetMedia) == "function" then
-			alertSound = _G.IPullMobSupport:GetMedia("sounds", "alert") or alertSound
+		if type(_G.IPullMobSupport) == "table" then
+			if type(_G.IPullMobSupport.ResolveMedia) == "function" then
+				alertSound = _G.IPullMobSupport:ResolveMedia("sounds", "alert") or alertSound
+			elseif type(_G.IPullMobSupport.GetMedia) == "function" then
+				alertSound = _G.IPullMobSupport:GetMedia("sounds", "alert") or alertSound
+			end
 		end
 		PlaySound(alertSound, "Master")
 	end
@@ -1025,6 +1029,14 @@ local function StartLeaderPull()
 	return started
 end
 
+local function StartBreakTimer()
+	local started = StartEncounter("break-timers")
+	if not started then
+		Print("Break timer module is unavailable.")
+	end
+	return started
+end
+
 local function TriggerReadyCheck()
 	if type(DoReadyCheck) == "function" then
 		DoReadyCheck()
@@ -1179,7 +1191,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm break, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -1198,6 +1210,11 @@ local function HandleSlash(msg)
 
 	if lower == "pull" then
 		StartLeaderPull()
+		return
+	end
+
+	if lower == "break" then
+		StartBreakTimer()
 		return
 	end
 

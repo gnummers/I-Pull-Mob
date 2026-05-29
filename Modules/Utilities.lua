@@ -15,6 +15,21 @@ IPM:RegisterModule("pull-timers", {
 	},
 })
 
+IPM:RegisterModule("break-timers", {
+	name = "Utility - Break Timers",
+	description = "A fixed break countdown module for raid pauses and short AFK windows.",
+	timeline = {
+		{ after = 60, label = "Break 4", prompt = "Break ends in 4 minutes", sound = true },
+		{ after = 120, label = "Break 3", prompt = "Break ends in 3 minutes", sound = true },
+		{ after = 180, label = "Break 2", prompt = "Break ends in 2 minutes", sound = true },
+		{ after = 240, label = "Break 1", prompt = "Break ends in 1 minute", sound = true },
+		{ after = 270, label = "Break 30", prompt = "Break ends in 30 seconds", sound = true },
+		{ after = 290, label = "Break 10", prompt = "Break ends in 10 seconds", sound = true },
+		{ after = 295, label = "Break 5", prompt = "Break ends in 5 seconds", sound = true },
+		{ after = 299, label = "Break 1", prompt = "Break ends in 1 second", sound = true },
+	},
+})
+
 IPM:RegisterModule("reminder-popups", {
 	name = "Utility - Reminder Popups",
 	description = "Generic pre-pull or mid-raid reminder prompts.",
