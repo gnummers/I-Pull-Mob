@@ -30,6 +30,20 @@ IPM:RegisterModule("break-timers", {
 	},
 })
 
+IPM:RegisterModule("range-helper", {
+	name = "Utility - Range Helper",
+	description = "A minimal range reminder for spread and stack assignments.",
+	persistentPrompt = true,
+	persistentPromptText = function()
+		local yards = IPM.GetRangeValue and IPM:GetRangeValue()
+		if yards then
+			return string.format("Maintain %d-yard range", yards)
+		end
+
+		return "Maintain assigned range"
+	end,
+})
+
 IPM:RegisterModule("reminder-popups", {
 	name = "Utility - Reminder Popups",
 	description = "Generic pre-pull or mid-raid reminder prompts.",

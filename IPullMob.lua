@@ -109,6 +109,10 @@ local function GetDB()
 		db.markerRules = {}
 	end
 
+	if type(db.rangeValue) ~= "number" then
+		db.rangeValue = nil
+	end
+
 	return db
 end
 
@@ -1037,6 +1041,45 @@ local function StartBreakTimer()
 	return started
 end
 
+local function CancelBreakTimer()
+	if state.encounterId ~= "break-timers" then
+		Print("No active break timer to cancel.")
+		return false
+	end
+
+	ClearEncounter(false)
+	Print("Break timer cancelled.")
+	return true
+end
+
+local function StartRangeHelper(rangeValue)
+	local normalizedRange = tonumber(rangeValue)
+	if not normalizedRange then
+		Print("Usage: /ipm range <yards> or /ipm range cancel")
+		return false
+	end
+
+	GetDB().rangeValue = normalizedRange
+	local started = StartEncounter("range-helper")
+	if not started then
+		Print("Range helper module is unavailable.")
+	end
+	return started
+end
+
+local function CancelRangeHelper()
+	GetDB().rangeValue = nil
+
+	if state.encounterId == "range-helper" then
+		ClearEncounter(false)
+		Print("Range helper cancelled.")
+	else
+		Print("Range helper cleared.")
+	end
+
+	return true
+end
+
 local function TriggerReadyCheck()
 	if type(DoReadyCheck) == "function" then
 		DoReadyCheck()
@@ -1049,7 +1092,16 @@ local function TriggerReadyCheck()
 end
 
 local function PrintRaidLeaderTools()
-	Print("Leader tools: pull countdown, ready check, kill summary, and marker support.")
+	Print("Leader tools: pull countdown, break timer, range helper, ready check, kill summary, and marker support.")
+end
+
+local function GetRangeValue()
+	return GetDB().rangeValue
+end
+
+local function SetRangeValue(value)
+	GetDB().rangeValue = tonumber(value)
+	return GetDB().rangeValue
 end
 
 local function StartEncounter(encounterId)
@@ -1082,6 +1134,18 @@ local function StartEncounter(encounterId)
 
 	if type(module.onStart) == "function" then
 		SafeCall(module.onStart, module, state)
+	end
+
+	if module.persistentPromptText then
+		local promptText = module.persistentPromptText
+		if type(promptText) == "function" then
+			local ok, result = pcall(promptText, module, state)
+			promptText = ok and result or nil
+		end
+
+		if type(promptText) == "string" and promptText ~= "" then
+			SetPrompt(promptText)
+		end
 	end
 
 	local now = GetTime()
@@ -1147,7 +1211,7 @@ local function UpdateBars()
 		bars[i].promptText:SetText("")
 	end
 
-	if state.encounterId and visibleCount == 0 then
+	if state.encounterId and visibleCount == 0 and not (state.module and state.module.persistentPrompt) then
 		SetPrompt("Encounter complete")
 	end
 end
@@ -1191,7 +1255,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm break, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm break, /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -1215,6 +1279,32 @@ local function HandleSlash(msg)
 
 	if lower == "break" then
 		StartBreakTimer()
+		return
+	end
+
+	if lower == "break cancel" then
+		CancelBreakTimer()
+		return
+	end
+
+	if lower == "range cancel" then
+		CancelRangeHelper()
+		return
+	end
+
+	local rangeValue = lower:match("^range%s+(%d+)$")
+	if rangeValue then
+		StartRangeHelper(rangeValue)
+		return
+	end
+
+	if lower == "range" then
+		local currentRange = GetDB().rangeValue
+		if currentRange then
+			Print(string.format("Current range helper: %d yards. Use /ipm range cancel to clear it.", currentRange))
+		else
+			Print("Usage: /ipm range <yards> or /ipm range cancel")
+		end
 		return
 	end
 
@@ -1854,7 +1944,15 @@ local function RegisterEventHandlers()
 
 		if event == "PLAYER_REGEN_ENABLED" then
 			if state.encounterId then
-				ClearEncounter(state.encounterFinished == true)
+				if state.module and state.module.persistentPrompt then
+					if GetDB().autoShow then
+						Fojiji:Show()
+					else
+						Fojiji:Hide()
+					end
+				else
+					ClearEncounter(state.encounterFinished == true)
+				end
 			else
 				Fojiji:Hide()
 			end
@@ -1901,6 +1999,8 @@ local function RegisterAPI()
 		MarkEncounterVictory = MarkEncounterVictory,
 		PrintKillSummary = PrintKillSummary,
 		PrintRaidLeaderTools = PrintRaidLeaderTools,
+		GetRangeValue = GetRangeValue,
+		SetRangeValue = SetRangeValue,
 		ApplyRaidMarker = ApplyRaidMarker,
 		FindRaidUnitByName = FindRaidUnitByName,
 		RegisterInterruptCycle = function(_, name, members)

@@ -49,11 +49,14 @@ end
 
 function Support:ResolveMedia(kind, key)
 	local value = self:GetMedia(kind, key)
-	if type(value) == "string" and SharedMedia and (kind == "sounds" or kind == "sound") then
-		local fetched = SharedMedia:Fetch("sound", value, true)
-		if fetched then
-			return fetched
+	if type(value) == "string" and (kind == "sounds" or kind == "sound") then
+		if SharedMedia then
+			local fetched = SharedMedia:Fetch("sound", value, true)
+			if fetched then
+				return fetched
+			end
 		end
+		return nil
 	end
 
 	return value
@@ -85,9 +88,21 @@ end
 Support:RegisterMedia("sounds", "alert", "fojji Bell")
 Support:RegisterMedia("sounds", "pull", "fojji Beep")
 Support:RegisterMedia("sounds", "warning", "fojji Interrupt")
+Support:RegisterMedia("sounds", "info", "fojji Info")
+Support:RegisterMedia("sounds", "success", "fojji Notification")
+Support:RegisterMedia("sounds", "ready", "fojji Click")
+Support:RegisterMedia("sounds", "kill", "fojji MultiPop")
+Support:RegisterMedia("sounds", "phase2", "fojji Phase2")
+Support:RegisterMedia("sounds", "phase3", "fojji Phase3")
+Support:RegisterMedia("sounds", "phase4", "fojji Phase4")
+Support:RegisterMedia("sounds", "berserk", "fojji Berserk")
+Support:RegisterMedia("sounds", "taunt", "fojji Taunt")
+Support:RegisterMedia("sounds", "watchfeet", "fojji |cFFFF0000Watch your feet|r")
 Support:RegisterMedia("textures", "warning", "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew")
 Support:RegisterMedia("textures", "pull", "Interface\\Icons\\INV_Misc_QuestionMark")
 Support:RegisterMedia("textures", "ready", "Interface\\RaidFrame\\ReadyCheck-Ready")
+Support:RegisterMedia("textures", "kill", "Interface\\RaidFrame\\ReadyCheck-Ready")
+Support:RegisterMedia("textures", "range", "Interface\\Icons\\Spell_Nature_Sentinal")
 
 IPM.RegisterSharedMedia = function(_, kind, key, value)
 	return Support:RegisterMedia(kind, key, value)
