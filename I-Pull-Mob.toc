@@ -33,3 +33,6 @@ Modules\TK_VoidReaver.lua
 Modules\TK_Alar.lua
 Modules\TK_Solarian.lua
 Modules\TK_Kaelthas.lua
+Modules\Hyjal.lua
+Modules\BlackTemple.lua
+Modules\ZulAman.lua

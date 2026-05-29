@@ -18,7 +18,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Interrupt cycle tracking and rotation advancement
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
-- Starter raid modules for Karazhan, Gruul's Lair, Magtheridon, SSC, and Tempest Keep
+- Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster
 
 ## Slash Commands
 
@@ -64,6 +64,26 @@ The addon ships with starter modules:
 - `ssc-core-runners` - Tainted Core handoff reminders for Lady Vashj
 - `tk-assignment-helper` - assignment and marker reminders for Tempest Keep fights
 - `raid-movement` - spread, stack, and reposition reminders
+- `hyjal-rage-winterchill` - Rage Winterchill
+- `hyjal-anetheron` - Anetheron
+- `hyjal-kazrogal` - Kaz'rogal
+- `hyjal-azgalor` - Azgalor
+- `hyjal-archimonde` - Archimonde
+- `bt-najentus` - High Warlord Naj'entus
+- `bt-supremus` - Supremus
+- `bt-akama` - Shade of Akama
+- `bt-teron` - Teron Gorefiend
+- `bt-gurtogg` - Gurtogg Bloodboil
+- `bt-reliquary` - Reliquary of Souls
+- `bt-mother-shahraz` - Mother Shahraz
+- `bt-council` - The Illidari Council
+- `bt-illidan` - Illidan Stormrage
+- `za-nalorakk` - Nalorakk
+- `za-akilzon` - Akil'zon
+- `za-janalai` - Jan'alai
+- `za-halazzi` - Halazzi
+- `za-malacrass` - Hex Lord Malacrass
+- `za-zuljin` - Zul'jin
 - `ssc-hydross` - Hydross the Unstable
 - `ssc-lurker` - The Lurker Below
 - `ssc-leotheras` - Leotheras the Blind
@@ -78,7 +98,7 @@ The addon ships with starter modules:
 - `raid-cooldowns` - generic raid cooldown reminders
 - `mana-reminders` - mana check and potion prompts
 
-These cover the full boss list for Phase 1 and Phase 2 TBC raid content in this addon.
+These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon.
 
 ## Module Model
 
