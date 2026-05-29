@@ -13,6 +13,6 @@ IPM:RegisterModule("ssc-morogrim", {
 	timeline = {
 		{ after = 12, label = "Watery Grave", prompt = "Watery Grave - pick up the encased player and keep the raid spread.", announce = "Watery Grave", sound = true, repeatCount = 5, every = 22, ["until"] = 120 },
 		{ after = 28, label = "Murloc wave", prompt = "Murloc wave incoming. Be ready to kite and slow.", sound = true, repeatCount = 4, every = 45, ["until"] = 180 },
-		{ after = 152, label = "Phase 2", prompt = "Phase 2 - stops Watery Grave and pivots into the water globule cleanup.", sound = true },
+		{ after = 152, label = "Phase 2", prompt = "Phase 2 - stop Watery Grave and pivot into water globule cleanup.", sound = true },
 	},
 })
