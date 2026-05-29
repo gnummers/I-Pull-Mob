@@ -18,6 +18,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Interrupt cycle tracking and rotation advancement
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
+- Shared support layer for media and utility services
 - Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
 
 ## Slash Commands
@@ -141,6 +142,7 @@ Disabled modules remain registered, but `/ipm start <module>` will refuse to lau
 - Addon title: `I Pull Mob`
 - Saved variables: `IPullMobDB`
 - Main file: `IPullMob.lua`
+- Support file: `IPullMobSupport.lua`
 - Encounter modules: `Modules\*.lua`
 - Research notes: `Research\*.md`
 

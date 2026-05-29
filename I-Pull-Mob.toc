@@ -6,6 +6,7 @@
 ## SavedVariables: IPullMobDB
 
 IPullMob.lua
+IPullMobSupport.lua
 Modules\Demo.lua
 Modules\TestRotations.lua
 Modules\Utilities.lua

@@ -130,7 +130,11 @@ local function PlayAlertSound()
 	end
 
 	if type(PlaySound) == "function" then
-		PlaySound(8959, "Master")
+		local alertSound = 8959
+		if type(_G.IPullMobSupport) == "table" and type(_G.IPullMobSupport.GetMedia) == "function" then
+			alertSound = _G.IPullMobSupport:GetMedia("sounds", "alert") or alertSound
+		end
+		PlaySound(alertSound, "Master")
 	end
 
 	if previousVolume and type(SetCVar) == "function" then
@@ -1230,6 +1234,16 @@ local function RegisterAPI()
 		RegisterModule = RegisterModule,
 		IsModuleEnabled = IsModuleEnabled,
 		SetModuleEnabled = SetModuleEnabled,
+		RegisterSharedMedia = function(_, kind, key, value)
+			if type(_G.IPullMobSupport) == "table" and type(_G.IPullMobSupport.RegisterMedia) == "function" then
+				return _G.IPullMobSupport:RegisterMedia(kind, key, value)
+			end
+		end,
+		GetSharedMedia = function(_, kind, key)
+			if type(_G.IPullMobSupport) == "table" and type(_G.IPullMobSupport.GetMedia) == "function" then
+				return _G.IPullMobSupport:GetMedia(kind, key)
+			end
+		end,
 		StartEncounter = StartEncounter,
 		ClearEncounter = ClearEncounter,
 		RegisterInterruptCycle = function(_, name, members)
@@ -1262,6 +1276,9 @@ local function RegisterAPI()
 		end,
 		GetEncounterData = function(_, id)
 			return Modules[NormalizeModuleId(id) or ""]
+		end,
+		GetSupport = function()
+			return _G.IPullMobSupport
 		end,
 		OpenOptions = OpenOptionsWindow,
 		RefreshOptions = function()
