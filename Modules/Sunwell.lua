@@ -110,7 +110,7 @@ IPM:RegisterModule("sw-muru", {
 
 IPM:RegisterModule("sw-kiljaeden", {
 	name = "Sunwell Plateau - Kil'jaeden",
-	description = "Imported timer pass for reflections, orbs, Fire Bloom, and Shadow Spike handling.",
+	description = "Imported timer pass for reflections, orbs, Fire Bloom, Shadow Spike, and Darkness handling.",
 	bossIds = { 25315, 25588 },
 	cycles = {
 		kick = {},
@@ -118,16 +118,18 @@ IPM:RegisterModule("sw-kiljaeden", {
 	autoMarkers = {
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45641 }, icon = 1, sequence = { 1, 2, 3, 4, 5, 6, 7, 8 }, clearOnRemove = true, announce = "Fire Bloom marked" },
 		{ event = "SPELL_AURA_REMOVED", spellIds = { 45641 }, icon = 1, clearOnRemove = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45885 }, icon = 6, target = "dest", clearOnRemove = true, announce = "Shadow Spike marked" },
 	},
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45892 }, prompt = "Sinister Reflection - handle clones and stop extra damage.", announce = "Sinister Reflection", sound = true },
 		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45848 }, prompt = "Shield of the Blue - swap to the correct target and keep the orb under control.", announce = "Shield of the Blue", sound = true },
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45641 }, prompt = "Fire Bloom - move out and keep the bloom target alive.", announce = "Fire Bloom", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 46605 }, prompt = "Darkness of a Thousand Souls - find the shield and prepare to move.", announce = "Darkness of a Thousand Souls", sound = true },
 		{ event = "SPELL_CAST_START", spellIds = { 46680 }, prompt = "Shadow Spike - kick the cast or prepare to move.", announce = "Shadow Spike", interruptCycle = "kick", sound = true },
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45885 }, prompt = "Shadow Spike target - react to the debuff immediately.", announce = "Shadow Spike", sound = true },
 	},
 	timeline = {
-		{ after = 10, label = "Pull setup", prompt = "Open with orb assignments and keep the ranged spread.", sound = true },
+		{ after = 10, label = "Pull setup", prompt = "Open with orb assignments, Fire Bloom marks, and a clean spread.", sound = true },
 		{ after = 40, label = "Bomb window", prompt = "Prepare for the next Darkness of a Thousand Souls window.", sound = true, repeatCount = 6, every = 45, ["until"] = 265 },
 		{ after = 120, label = "Phase check", prompt = "Check phase progression and keep dragon orb usage efficient.", sound = true },
 		{ after = 220, label = "Final burn", prompt = "Final burn - save raid cooldowns and keep the raid spread.", sound = true },
