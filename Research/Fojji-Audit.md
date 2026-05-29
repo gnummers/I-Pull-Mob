@@ -16,6 +16,15 @@ This audit maps the current addon to the public Fojji-style category model.
 - `raid-cooldowns`
   - Present as `raid-cooldowns`
   - Covers raid-wide cooldown prompts
+- `raid-leader-tools`
+  - Present as `raid-leader-tools`
+  - Covers pull countdowns, ready checks, and kill recording
+- `automarker`
+  - Present as `automarker`
+  - Provides shared marker support for boss modules that declare marker rules
+- `boss-kill-times`
+  - Present as `boss-kill-times`
+  - Covers kill-time history and summary output
 - `interrupt-cycle`
   - Present in the core interrupt cycle engine
   - Used by boss modules and utility modules
@@ -25,12 +34,6 @@ This audit maps the current addon to the public Fojji-style category model.
 
 ## Partially Covered
 
-- `raid-leader-tools`
-  - We have pull timers and reminders, but not a dedicated leader control panel
-- `autormarker`
-  - No real assignment marker automation yet
-- `boss-kill-times`
-  - No persistent kill-time tracking yet
 - `boss-frames`
   - The addon has a frame and bars, but not a dedicated boss resource frame system
 - `buff-tracker`
@@ -49,7 +52,7 @@ This audit maps the current addon to the public Fojji-style category model.
 - `combat-log-import`
   - No log import or post-fight replay pipeline
 - `raid-reporting`
-  - No kill-time history, assignment completion, or raid performance summary
+  - No broader performance dashboard beyond kill-time history
 
 ## Best Next Additions
 

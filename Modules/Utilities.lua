@@ -103,3 +103,49 @@ IPM:RegisterModule("raid-movement", {
 		{ after = 60, label = "Move", prompt = "Move now and keep your camera on the boss.", sound = true },
 	},
 })
+
+IPM:RegisterModule("raid-leader-tools", {
+	name = "Utility - Raid Leader Tools",
+	description = "Shared pull countdown, ready check, and leader reminder helpers.",
+	onStart = function()
+		if IPM.PrintRaidLeaderTools then
+			IPM:PrintRaidLeaderTools()
+		end
+	end,
+	timeline = {
+		{ after = 1, label = "Pull countdown", prompt = "Use /ipm pull for a countdown or hit the pull button in options.", sound = true },
+		{ after = 5, label = "Ready check", prompt = "Use /ipm ready to send a ready check.", sound = true },
+		{ after = 15, label = "Kill record", prompt = "Use /ipm kill after the boss dies to save the time.", sound = true },
+	},
+})
+
+IPM:RegisterModule("automarker", {
+	name = "Utility - Automarker",
+	description = "Shared raid marker support for boss modules that declare autoMarkers.",
+	onStart = function()
+		if DEFAULT_CHAT_FRAME then
+			DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99I Pull Mob|r: Automarker support is ready for modules that define autoMarkers.")
+		end
+	end,
+	timeline = {
+		{ after = 2, label = "Marker reminder", prompt = "Boss modules can assign markers automatically from combat log events.", sound = true },
+		{ after = 10, label = "Marker check", prompt = "Verify you have raid assist rights before relying on markers.", sound = true },
+	},
+})
+
+IPM:RegisterModule("boss-kill-times", {
+	name = "Utility - Boss Kill Times",
+	description = "Kill-time recording and post-fight summary helper.",
+	onStart = function()
+		local encounterId = IPM.GetCurrentEncounter and IPM:GetCurrentEncounter()
+		if encounterId then
+			IPM:PrintKillSummary(encounterId)
+		else
+			DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99I Pull Mob|r: Use /ipm kill to record a boss time and /ipm summary <module> to review history.")
+		end
+	end,
+	timeline = {
+		{ after = 3, label = "Record kill", prompt = "Use /ipm kill when the boss dies to save the kill time.", sound = true },
+		{ after = 12, label = "Review history", prompt = "Use /ipm summary <module> to review recent kill times.", sound = true },
+	},
+})

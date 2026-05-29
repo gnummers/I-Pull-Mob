@@ -2,6 +2,13 @@
 
 This backlog turns the public Fojji module list and the local DBM/BigWigs research into concrete work items for `I Pull Mob`.
 
+Implemented in the current addon:
+
+- pull timers
+- raid leader tools
+- automarker support for selected boss modules
+- kill-time tracking and summary reporting
+
 ## Tier 1: Core Raid Leader Features
 
 - `raid-leader-tools`

@@ -6,6 +6,7 @@ end
 IPM:RegisterModule("sw-brutallus", {
 	name = "Sunwell Plateau - Brutallus",
 	description = "Imported timer pass for Burn, Meteor Slash, Stomp, and burn-resist handling.",
+	bossIds = { 24882 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 46394 }, prompt = "Burn - spread to 5 yards and keep the debuff target alive.", announce = "Burn", sound = true },
 		{ event = "SPELL_MISSED", spellIds = { 45141 }, prompt = "Burn resisted - note the resist and keep the soak plan stable.", announce = "Burn resist", sound = true },
@@ -22,6 +23,7 @@ IPM:RegisterModule("sw-brutallus", {
 IPM:RegisterModule("sw-kalecgos", {
 	name = "Sunwell Plateau - Kalecgos",
 	description = "Imported timer pass for portals, Arcane Buffet, Frost Breath, and Wild Magic handling.",
+	bossIds = { 24850, 24892 },
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellIds = { 44799 }, prompt = "Frost Breath - heal the tank and keep buffs ready.", announce = "Frost Breath", sound = true },
 		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45018 }, prompt = "Arcane Buffet - stack reset and tank stabilization.", announce = "Arcane Buffet", sound = true },
@@ -39,6 +41,10 @@ IPM:RegisterModule("sw-kalecgos", {
 IPM:RegisterModule("sw-felmyst", {
 	name = "Sunwell Plateau - Felmyst",
 	description = "Imported timer pass for Gas Nova, Encapsulate, Demonic Vapor, and phase timing.",
+	bossIds = { 25038 },
+	autoMarkers = {
+		{ event = "SPELL_DAMAGE", spellIds = { 45661 }, icon = 1, target = "dest", clearOnRemove = true, announce = "Encapsulate marked" },
+	},
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_START", spellIds = { 45855 }, prompt = "Gas Nova - heal through the blast and reset positioning.", announce = "Gas Nova", sound = true },
 		{ event = "SPELL_SUMMON", spellIds = { 45392 }, prompt = "Demonic Vapor - swap and kill the spawn.", announce = "Demonic Vapor", sound = true },
@@ -56,8 +62,13 @@ IPM:RegisterModule("sw-felmyst", {
 IPM:RegisterModule("sw-twins", {
 	name = "Sunwell Plateau - The Eredar Twins",
 	description = "Imported timer pass for Pyrogenics, Shadow Nova, Conflagration, and threat handling.",
+	bossIds = { 25166, 25165 },
 	cycles = {
 		kick = {},
+	},
+	autoMarkers = {
+		{ event = "SPELL_CAST_START", spellIds = { 45342 }, icon = 8, target = "dest", clearOnRemove = true, announce = "Conflagration marked" },
+		{ event = "SPELL_AURA_REMOVED", spellIds = { 45342 }, icon = 8, target = "dest", clearOnRemove = true },
 	},
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45230 }, prompt = "Pyrogenics - dispel the buff if assigned.", announce = "Pyrogenics", sound = true },
@@ -77,6 +88,7 @@ IPM:RegisterModule("sw-twins", {
 IPM:RegisterModule("sw-muru", {
 	name = "Sunwell Plateau - M'uru",
 	description = "Imported timer pass for Darkness, add waves, and the Entropius transition.",
+	bossIds = { 25741, 25840 },
 	combatLogTriggers = {
 		{ event = "SPELL_AURA_APPLIED", spellIds = { 45996 }, prompt = "Darkness - heal through the cast and keep the boss stable.", announce = "Darkness", sound = true },
 		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45934 }, prompt = "Dark Fiend - swap and clear the spawn.", announce = "Dark Fiend", sound = true },
@@ -94,8 +106,13 @@ IPM:RegisterModule("sw-muru", {
 IPM:RegisterModule("sw-kiljaeden", {
 	name = "Sunwell Plateau - Kil'jaeden",
 	description = "Imported timer pass for reflections, orbs, Fire Bloom, and Shadow Spike handling.",
+	bossIds = { 25315, 25588 },
 	cycles = {
 		kick = {},
+	},
+	autoMarkers = {
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45641 }, icon = 1, sequence = { 1, 2, 3, 4, 5, 6, 7, 8 }, clearOnRemove = true, announce = "Fire Bloom marked" },
+		{ event = "SPELL_AURA_REMOVED", spellIds = { 45641 }, icon = 1, clearOnRemove = true },
 	},
 	combatLogTriggers = {
 		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45892 }, prompt = "Sinister Reflection - handle clones and stop extra damage.", announce = "Sinister Reflection", sound = true },

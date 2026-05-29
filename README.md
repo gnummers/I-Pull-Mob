@@ -19,6 +19,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
 - Shared support layer for media and utility services
+- Leader tools, automarker support, and kill-time tracking
 - Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
 
 ## Slash Commands
@@ -30,6 +31,11 @@ It is intentionally structured like a lightweight encounter framework:
 - `/ipm modules` - list registered modules
 - `/ipm cycles` - list configured interrupt cycles
 - `/ipm options` - open the module and settings window
+- `/ipm pull` - start the pull countdown module
+- `/ipm ready` - send a ready check
+- `/ipm kill` - record the current encounter as a kill and save the time
+- `/ipm summary [module]` - print kill history for the current or named module
+- `/ipm leader` - print a leader-tools reminder
 - `/ipm enable <module>` - enable a module
 - `/ipm disable <module>` - disable a module
 - `/ipm cycle <name> add <player>` - add a player to a cycle
@@ -62,6 +68,9 @@ The addon ships with starter modules:
 - `pull-timers` - a simple pull countdown module
 - `reminder-popups` - generic pre-pull or mid-raid reminder prompts
 - `taunt-alerter` - generic tank swap reminders
+- `raid-leader-tools` - shared pull, ready, and leader reminders
+- `automarker` - shared marker support for selected boss mechanics
+- `boss-kill-times` - kill-time tracking and post-fight summaries
 - `ssc-core-runners` - Tainted Core handoff reminders for Lady Vashj
 - `tk-assignment-helper` - assignment and marker reminders for Tempest Keep fights
 - `raid-movement` - spread, stack, and reposition reminders
@@ -115,6 +124,8 @@ Each raid module can define:
 - `cycles` for initial interrupt assignments
 - `timeline` entries with `after`, `label`, `prompt`, `announce`, `sound`, `interruptCycle`, `repeatCount`, `every`, and `until`
 - `combatLogTriggers` entries for cast-start and aura-based prompts that should fire from actual combat log events
+- `bossIds` for auto-detecting boss deaths and recording kill times
+- `autoMarkers` for assigning raid markers from combat-log events
 - optional hooks like `onStart`, `onSchedule`, `onEvent`, and `onCombatLog`
 
 That makes the addon suitable for converting WeakAura-style raid logic into a standalone raid assistant.
@@ -128,6 +139,8 @@ Use `/ipm options` to open the configuration window. From there you can:
 - adjust the alert volume used for addon sounds
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
+- use leader tools buttons for pull countdowns, ready checks, and kill recording
+- review kill-time history after a fight or by module name
 
 Disabled modules remain registered, but `/ipm start <module>` will refuse to launch them until they are re-enabled.
 
@@ -148,4 +161,4 @@ Disabled modules remain registered, but `/ipm start <module>` will refuse to lau
 
 ## Next Step
 
-Add the remaining Sunwell bosses, then tighten the imported timing windows with pull logs.
+Tighten the imported timing windows with pull logs, then add more boss-specific leader tools where the raid benefits from them.

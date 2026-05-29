@@ -10,6 +10,7 @@ local DEFAULT_ALERT_VOLUME = 1
 local DEFAULT_SOUND_ENABLED = true
 local DEFAULT_AUTO_SHOW = true
 local DEFAULT_LOCKED = false
+local DEFAULT_KILL_HISTORY_LIMIT = 20
 local UPDATE_INTERVAL = 0.05
 
 local function Print(message)
@@ -94,6 +95,14 @@ local function GetDB()
 
 	if type(db.moduleEnabled) ~= "table" then
 		db.moduleEnabled = {}
+	end
+
+	if type(db.killTimes) ~= "table" then
+		db.killTimes = {}
+	end
+
+	if type(db.markerRules) ~= "table" then
+		db.markerRules = {}
 	end
 
 	return db
@@ -193,6 +202,86 @@ local function NormalizeModuleId(id)
 	end
 
 	return id
+end
+
+local function NormalizeMarkerIcon(icon)
+	local value = tonumber(icon)
+	if not value then
+		return nil
+	end
+
+	value = math.floor(value)
+	if value < 1 or value > 8 then
+		return nil
+	end
+
+	return value
+end
+
+local function GetMobIdFromGUID(guid)
+	if type(guid) ~= "string" or guid == "" then
+		return nil
+	end
+
+	if type(strsplit) ~= "function" then
+		return nil
+	end
+
+	local mobId = select(6, strsplit("-", guid))
+	return tonumber(mobId)
+end
+
+local function FindRaidUnitByName(name)
+	if type(name) ~= "string" or name == "" then
+		return nil
+	end
+
+	if UnitName("player") == name then
+		return "player"
+	end
+
+	if IsInRaid() then
+		for i = 1, 40 do
+			local unit = "raid" .. i
+			if UnitExists(unit) and UnitName(unit) == name then
+				return unit
+			end
+		end
+	end
+
+	if IsInGroup() then
+		for i = 1, 4 do
+			local unit = "party" .. i
+			if UnitExists(unit) and UnitName(unit) == name then
+				return unit
+			end
+		end
+	end
+
+	return nil
+end
+
+local function CanAssignRaidMarker()
+	return type(SetRaidTarget) == "function" and (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player"))
+end
+
+local function ApplyRaidMarker(name, icon, overwrite)
+	local unit = FindRaidUnitByName(name)
+	icon = NormalizeMarkerIcon(icon)
+	if not unit or not icon then
+		return false
+	end
+
+	if not CanAssignRaidMarker() then
+		return false
+	end
+
+	if not overwrite and GetRaidTargetIndex(unit) then
+		return false
+	end
+
+	SetRaidTarget(unit, icon)
+	return true
 end
 
 local function IsModuleEnabled(id)
@@ -300,8 +389,12 @@ local state = {
 	module = nil,
 	activeEvents = {},
 	combatLogState = {},
+	markerState = {},
 	nextEventId = 0,
 	timerTicks = 0,
+	encounterStart = nil,
+	encounterFinished = nil,
+	encounterFinishReason = nil,
 }
 
 local function SetPrompt(text)
@@ -540,6 +633,99 @@ local function FireCombatLogTrigger(trigger, info, triggerKey)
 	end
 end
 
+local function FireAutoMarker(rule, info, ruleKey)
+	if type(rule) ~= "table" or type(info) ~= "table" then
+		return false
+	end
+
+	local targetName = info.destName
+	if rule.target == "source" then
+		targetName = info.sourceName
+	end
+
+	if rule.targetName and type(rule.targetName) == "string" then
+		targetName = rule.targetName
+	end
+
+	if type(targetName) ~= "string" or targetName == "" then
+		return false
+	end
+
+	local markerState = state.markerState[ruleKey] or { index = 0 }
+	state.markerState[ruleKey] = markerState
+
+	if rule.clearOnRemove and info.event == "SPELL_AURA_REMOVED" then
+		local clearName = markerState.lastTarget or targetName
+		local unit = FindRaidUnitByName(clearName)
+		if unit and CanAssignRaidMarker() then
+			SetRaidTarget(unit, 0)
+			markerState.lastTarget = nil
+			return true
+		end
+	end
+
+	local icon = NormalizeMarkerIcon(rule.icon)
+
+	local sequence = rule.sequence
+	if type(sequence) == "table" and #sequence > 0 then
+		markerState.index = markerState.index + 1
+		local seqIndex = markerState.index
+		if seqIndex > #sequence then
+			seqIndex = #sequence
+		end
+		icon = NormalizeMarkerIcon(sequence[seqIndex]) or icon
+	elseif rule.nextIcon then
+		markerState.index = markerState.index + 1
+		icon = NormalizeMarkerIcon(rule.nextIcon + markerState.index - 1) or icon
+	end
+
+	if not icon then
+		return false
+	end
+
+	if rule.clearOnRemove then
+		if info.event == "SPELL_AURA_REMOVED" then
+			local unit = FindRaidUnitByName(targetName)
+			if unit and CanAssignRaidMarker() then
+				SetRaidTarget(unit, 0)
+				return true
+			end
+		end
+	end
+
+	if rule.overwrite == false then
+		local unit = FindRaidUnitByName(targetName)
+		if unit and GetRaidTargetIndex(unit) then
+			return false
+		end
+	end
+
+	if ApplyRaidMarker(targetName, icon, rule.overwrite ~= false) then
+		markerState.lastTarget = targetName
+		if rule.announce ~= false then
+			local message = rule.announce or string.format("Mark %s on %s", icon, targetName)
+			RaidWarn(message)
+		end
+		return true
+	end
+
+	return false
+end
+
+local function HandleModuleAutoMarkers(info)
+	local module = state.module
+	if not module or type(module.autoMarkers) ~= "table" then
+		return
+	end
+
+	for index, rule in ipairs(module.autoMarkers) do
+		local ruleKey = string.format("%s:auto:%d", module.id or state.encounterId or "module", index)
+		if MatchesCombatLogTrigger(rule, info) then
+			FireAutoMarker(rule, info, ruleKey)
+		end
+	end
+end
+
 local function HandleCombatLogEvent()
 	if not state.module then
 		return
@@ -565,9 +751,24 @@ local function HandleCombatLogEvent()
 		spellName = spellName,
 	}
 
+	if info.event == "UNIT_DIED" and type(state.module.bossIds) == "table" then
+		local mobId = GetMobIdFromGUID(info.destGUID)
+		if mobId then
+			for _, bossId in ipairs(state.module.bossIds) do
+				if tonumber(bossId) == mobId then
+					state.encounterFinished = true
+					state.encounterFinishReason = "boss died"
+					break
+				end
+			end
+		end
+	end
+
 	if type(state.module.onCombatLog) == "function" then
 		SafeCall(state.module.onCombatLog, state.module, info, state)
 	end
+
+	HandleModuleAutoMarkers(info)
 
 	local triggers = state.module.combatLogTriggers
 	if type(triggers) ~= "table" then
@@ -583,11 +784,18 @@ local function HandleCombatLogEvent()
 end
 
 local function ClearEncounter(showComplete)
+	if showComplete and state.encounterId then
+		FinishEncounter(state.encounterFinished == true, state.encounterFinishReason or "encounter finished")
+	end
 	state.encounterId = nil
 	state.module = nil
 	state.activeEvents = {}
 	state.combatLogState = {}
+	state.markerState = {}
 	state.nextEventId = 0
+	state.encounterStart = nil
+	state.encounterFinished = nil
+	state.encounterFinishReason = nil
 	SetPrompt("")
 	ClearBars()
 
@@ -623,6 +831,143 @@ local function AddEvent(event)
 	SortEvents()
 end
 
+local function GetKillHistory(id)
+	local db = GetDB()
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId then
+		return nil
+	end
+
+	local history = db.killTimes[normalizedId]
+	if type(history) ~= "table" then
+		history = {}
+		db.killTimes[normalizedId] = history
+	end
+
+	return history
+end
+
+local function RecordKillTime(id, duration)
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId then
+		return nil
+	end
+
+	duration = tonumber(duration)
+	if not duration or duration <= 0 then
+		return nil
+	end
+
+	local history = GetKillHistory(normalizedId)
+	if not history then
+		return nil
+	end
+
+	local entry = {
+		duration = duration,
+		timestamp = time and time() or nil,
+	}
+	table.insert(history, 1, entry)
+	while #history > DEFAULT_KILL_HISTORY_LIMIT do
+		table.remove(history)
+	end
+
+	return entry
+end
+
+local function FormatDuration(seconds)
+	seconds = tonumber(seconds) or 0
+	if seconds < 60 then
+		return string.format("%.1fs", seconds)
+	end
+
+	local minutes = math.floor(seconds / 60)
+	local remainder = seconds - (minutes * 60)
+	return string.format("%dm %.1fs", minutes, remainder)
+end
+
+local function PrintKillSummary(id)
+	local normalizedId = NormalizeModuleId(id)
+	if not normalizedId then
+		return
+	end
+
+	local history = GetKillHistory(normalizedId)
+	if not history or #history == 0 then
+		Print(string.format("No kill history recorded for %s.", normalizedId))
+		return
+	end
+
+	local module = Modules[normalizedId]
+	local best = history[1]
+	for i = 2, #history do
+		if history[i].duration < best.duration then
+			best = history[i]
+		end
+	end
+
+	Print(string.format("%s best: %s (%d runs)", module and module.name or normalizedId, FormatDuration(best.duration), #history))
+	for i = 1, math.min(3, #history) do
+		local entry = history[i]
+		Print(string.format("  %d. %s", i, FormatDuration(entry.duration)))
+	end
+end
+
+local function FinishEncounter(victory, reason)
+	local module = state.module
+	if not module or not state.encounterId then
+		return false
+	end
+
+	local duration = state.encounterStart and (GetTime() - state.encounterStart) or 0
+	if victory then
+		local entry = RecordKillTime(state.encounterId, duration)
+		if entry then
+			Print(string.format("Recorded kill for %s: %s%s", module.name or state.encounterId, FormatDuration(entry.duration), reason and reason ~= "" and string.format(" (%s)", reason) or ""))
+		end
+		PrintKillSummary(state.encounterId)
+	elseif reason and reason ~= "" then
+		Print(string.format("Finished %s: %s", module.name or state.encounterId, reason))
+	end
+
+	return true
+end
+
+local function MarkEncounterVictory(reason)
+	if not state.encounterId then
+		Print("No active encounter to record.")
+		return false
+	end
+
+	state.encounterFinished = true
+	state.encounterFinishReason = reason or "manual kill"
+	ClearEncounter(true)
+	return true
+end
+
+local function StartLeaderPull()
+	local started = StartEncounter("pull-timers")
+	if not started then
+		Print("Pull timer module is unavailable.")
+	end
+	return started
+end
+
+local function TriggerReadyCheck()
+	if type(DoReadyCheck) == "function" then
+		DoReadyCheck()
+		Print("Ready check sent.")
+		return true
+	end
+
+	Print("Ready check is unavailable in this client.")
+	return false
+end
+
+local function PrintRaidLeaderTools()
+	Print("Leader tools: pull countdown, ready check, kill summary, and marker support.")
+end
+
 local function StartEncounter(encounterId)
 	local normalizedId = NormalizeModuleId(encounterId)
 	local module = normalizedId and Modules[normalizedId] or nil
@@ -640,6 +985,10 @@ local function StartEncounter(encounterId)
 	state.encounterId = normalizedId
 	state.module = module
 	state.combatLogState = {}
+	state.markerState = {}
+	state.encounterStart = GetTime()
+	state.encounterFinished = nil
+	state.encounterFinishReason = nil
 
 	if type(module.cycles) == "table" then
 		for cycleName, members in pairs(module.cycles) do
@@ -758,7 +1107,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm modules, /ipm cycles, /ipm options, /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -772,6 +1121,40 @@ local function HandleSlash(msg)
 
 	if lower == "demo" then
 		StartEncounter("demo")
+		return
+	end
+
+	if lower == "pull" then
+		StartLeaderPull()
+		return
+	end
+
+	if lower == "ready" then
+		TriggerReadyCheck()
+		return
+	end
+
+	if lower == "leader" then
+		PrintRaidLeaderTools()
+		return
+	end
+
+	if lower == "kill" then
+		MarkEncounterVictory("manual kill")
+		return
+	end
+
+	local summaryId = lower:match("^summary%s*(.-)$")
+	if summaryId then
+		summaryId = summaryId:gsub("^%s+", ""):gsub("%s+$", "")
+		if summaryId == "" then
+			summaryId = state.encounterId
+		end
+		if summaryId then
+			PrintKillSummary(summaryId)
+		else
+			Print("Usage: /ipm summary <module>")
+		end
 		return
 	end
 
@@ -1090,12 +1473,91 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	local function MakeButton(buttonName, label, anchorPoint, relativeTo, relativePoint, x, y, width, onClick)
+		local button = CreateFrame("Button", buttonName, optionsFrame, "UIPanelButtonTemplate")
+		button:SetSize(width or 120, 22)
+		button:SetPoint(anchorPoint, relativeTo, relativePoint, x, y)
+		button:SetText(label)
+		button:SetScript("OnClick", onClick)
+		return button
+	end
+
+	optionsFrame.leaderLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.leaderLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -240)
+	optionsFrame.leaderLabel:SetText("Leader Tools")
+
+	optionsFrame.pullButton = MakeButton(
+		"IPullMobPullButton",
+		"Pull Countdown",
+		"TOPLEFT",
+		optionsFrame.leaderLabel,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		120,
+		function()
+			StartLeaderPull()
+		end
+	)
+
+	optionsFrame.readyButton = MakeButton(
+		"IPullMobReadyButton",
+		"Ready Check",
+		"LEFT",
+		optionsFrame.pullButton,
+		"RIGHT",
+		10,
+		0,
+		110,
+		function()
+			TriggerReadyCheck()
+		end
+	)
+
+	optionsFrame.killButton = MakeButton(
+		"IPullMobKillButton",
+		"Record Kill",
+		"LEFT",
+		optionsFrame.readyButton,
+		"RIGHT",
+		10,
+		0,
+		110,
+		function()
+			MarkEncounterVictory("manual button")
+		end
+	)
+
+	optionsFrame.summaryButton = MakeButton(
+		"IPullMobSummaryButton",
+		"Kill Summary",
+		"TOPLEFT",
+		optionsFrame.pullButton,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		120,
+		function()
+			if state.encounterId then
+				PrintKillSummary(state.encounterId)
+			else
+				Print("No active encounter selected.")
+			end
+		end
+	)
+
+	optionsFrame.toolsHint = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.summaryButton, "RIGHT", 12, 0)
+	optionsFrame.toolsHint:SetWidth(250)
+	optionsFrame.toolsHint:SetJustifyH("LEFT")
+	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls and save kill times.")
+
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -260)
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -310)
 	optionsFrame.modulesLabel:SetText("Modules")
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", 14, -284)
+	scrollFrame:SetPoint("TOPLEFT", 14, -334)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -32, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
@@ -1206,8 +1668,12 @@ local function RegisterEventHandlers()
 			return
 		end
 
-		if event == "PLAYER_REGEN_ENABLED" and not state.encounterId then
-			Fojiji:Hide()
+		if event == "PLAYER_REGEN_ENABLED" then
+			if state.encounterId then
+				ClearEncounter(state.encounterFinished == true)
+			else
+				Fojiji:Hide()
+			end
 			return
 		end
 	end)
@@ -1246,6 +1712,13 @@ local function RegisterAPI()
 		end,
 		StartEncounter = StartEncounter,
 		ClearEncounter = ClearEncounter,
+		StartLeaderPull = StartLeaderPull,
+		TriggerReadyCheck = TriggerReadyCheck,
+		MarkEncounterVictory = MarkEncounterVictory,
+		PrintKillSummary = PrintKillSummary,
+		PrintRaidLeaderTools = PrintRaidLeaderTools,
+		ApplyRaidMarker = ApplyRaidMarker,
+		FindRaidUnitByName = FindRaidUnitByName,
 		RegisterInterruptCycle = function(_, name, members)
 			local normalized = NormalizeModuleId(name)
 			if not normalized then
@@ -1276,6 +1749,9 @@ local function RegisterAPI()
 		end,
 		GetEncounterData = function(_, id)
 			return Modules[NormalizeModuleId(id) or ""]
+		end,
+		GetCurrentEncounter = function()
+			return state.encounterId, state.module, state.encounterStart
 		end,
 		GetSupport = function()
 			return _G.IPullMobSupport
