@@ -18,7 +18,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Interrupt cycle tracking and rotation advancement
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
-- Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass
+- Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass for the full Sunwell raid roster
 
 ## Slash Commands
 
@@ -95,13 +95,16 @@ The addon ships with starter modules:
 - `tk-solarian` - High Astromancer Solarian
 - `tk-kaelthas` - Kael'thas Sunstrider
 - `sw-brutallus` - Brutallus
+- `sw-kalecgos` - Kalecgos
+- `sw-felmyst` - Felmyst
+- `sw-twins` - The Eredar Twins
 - `sw-muru` - M'uru
 - `sw-kiljaeden` - Kil'jaeden
 - `prepull-checklist` - a short pre-pull readiness checklist
 - `raid-cooldowns` - generic raid cooldown reminders
 - `mana-reminders` - mana check and potion prompts
 
-These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon, plus a starter Sunwell import pass for the highest-value boss timers.
+These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon, plus a starter Sunwell import pass for the full Sunwell raid roster.
 
 ## Module Model
 

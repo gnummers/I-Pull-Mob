@@ -19,6 +19,61 @@ IPM:RegisterModule("sw-brutallus", {
 	},
 })
 
+IPM:RegisterModule("sw-kalecgos", {
+	name = "Sunwell Plateau - Kalecgos",
+	description = "Imported timer pass for portals, Arcane Buffet, Frost Breath, and Wild Magic handling.",
+	combatLogTriggers = {
+		{ event = "SPELL_CAST_START", spellIds = { 44799 }, prompt = "Frost Breath - heal the tank and keep buffs ready.", announce = "Frost Breath", sound = true },
+		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45018 }, prompt = "Arcane Buffet - stack reset and tank stabilization.", announce = "Arcane Buffet", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 46021 }, prompt = "Spectral Realm - handle portal groups and assignments.", announce = "Spectral Realm", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45032, 45034 }, prompt = "Curse of Boundless Agony - move out and resolve the curse.", announce = "Curse of Boundless Agony", sound = true },
+	},
+	timeline = {
+		{ after = 8, label = "Pull setup", prompt = "Open with portal assignments and tank rotation ready.", sound = true },
+		{ after = 20, label = "Portal", prompt = "Possible portal soon - watch the spectral realm assignments.", sound = true, repeatCount = 10, every = 25, ["until"] = 245 },
+		{ after = 15, label = "Breath check", prompt = "Keep Frost Breath coverage ready and stabilize the tank.", sound = true, repeatCount = 12, every = 15, ["until"] = 180 },
+		{ after = 60, label = "Buffet ramp", prompt = "Arcane Buffet stacks are climbing - plan your reset.", sound = true, repeatCount = 10, every = 8, ["until"] = 140 },
+	},
+})
+
+IPM:RegisterModule("sw-felmyst", {
+	name = "Sunwell Plateau - Felmyst",
+	description = "Imported timer pass for Gas Nova, Encapsulate, Demonic Vapor, and phase timing.",
+	combatLogTriggers = {
+		{ event = "SPELL_CAST_START", spellIds = { 45855 }, prompt = "Gas Nova - heal through the blast and reset positioning.", announce = "Gas Nova", sound = true },
+		{ event = "SPELL_SUMMON", spellIds = { 45392 }, prompt = "Demonic Vapor - swap and kill the spawn.", announce = "Demonic Vapor", sound = true },
+		{ event = "SPELL_DAMAGE", spellIds = { 45661 }, prompt = "Encapsulate - rescue the target and keep the lane open.", announce = "Encapsulate", sound = true },
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45866 }, prompt = "Corrosion - tank cooldown and healer focus.", announce = "Corrosion", sound = true },
+	},
+	timeline = {
+		{ after = 5, label = "Pull setup", prompt = "Open with spread positions and vapor assignments.", sound = true },
+		{ after = 30, label = "Encapsulate", prompt = "Prepare for Encapsulate and keep the proximity clean.", sound = true, repeatCount = 8, every = 30, ["until"] = 240 },
+		{ after = 55, label = "Deep Breath soon", prompt = "Watch for the air phase and clear the lane for Deep Breath.", sound = true, repeatCount = 4, every = 100, ["until"] = 360 },
+		{ after = 60, label = "Phase marker", prompt = "Track the landing and takeoff pattern for the next phase.", sound = true },
+	},
+})
+
+IPM:RegisterModule("sw-twins", {
+	name = "Sunwell Plateau - The Eredar Twins",
+	description = "Imported timer pass for Pyrogenics, Shadow Nova, Conflagration, and threat handling.",
+	cycles = {
+		kick = {},
+	},
+	combatLogTriggers = {
+		{ event = "SPELL_AURA_APPLIED", spellIds = { 45230 }, prompt = "Pyrogenics - dispel the buff if assigned.", announce = "Pyrogenics", sound = true },
+		{ event = "SPELL_CAST_SUCCESS", spellIds = { 45256 }, prompt = "Confounding Blow - tank check and next swap.", announce = "Confounding Blow", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 45248 }, prompt = "Shadow Blades - watch the cleave and keep the boss faced away.", announce = "Shadow Blades", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 45342 }, prompt = "Conflagration - move immediately and keep the target safe.", announce = "Conflagration", sound = true },
+		{ event = "SPELL_CAST_START", spellIds = { 45329 }, prompt = "Shadow Nova - kick or interrupt the cast sequence.", announce = "Shadow Nova", interruptCycle = "kick", sound = true },
+	},
+	timeline = {
+		{ after = 8, label = "Pull setup", prompt = "Open with threat assignments and proximity spacing.", sound = true },
+		{ after = 15, label = "Nova cycle", prompt = "Kick the next Shadow Nova and keep the interrupt rotation clean.", interruptCycle = "kick", sound = true, repeatCount = 8, every = 32, ["until"] = 250 },
+		{ after = 25, label = "Conflag check", prompt = "Watch for Conflagration and move the marked player out.", sound = true, repeatCount = 7, every = 32, ["until"] = 220 },
+		{ after = 45, label = "Threat check", prompt = "Check the threat ordering for Alythess and Sacrolash.", sound = true, repeatCount = 5, every = 40, ["until"] = 220 },
+	},
+})
+
 IPM:RegisterModule("sw-muru", {
 	name = "Sunwell Plateau - M'uru",
 	description = "Imported timer pass for Darkness, add waves, and the Entropius transition.",

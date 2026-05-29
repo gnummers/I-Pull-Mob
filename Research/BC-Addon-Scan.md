@@ -26,6 +26,31 @@ This note captures the highest-value timer and mechanic data extracted from the 
 - Stomp: `45185`
 - Key DBM/BW pattern: short burn timer, repeated stomp recovery, and burn resist notice.
 
+### Kalecgos
+
+- Arcane Buffet: `45018`
+- Frost Breath: `44799`
+- Spectral Realm / Portal: `46021` / `44866`
+- Curse of Boundless Agony: `45032`
+- Key DBM/BW pattern: portal cadence, breath CD, Arcane Buffet stack ramp, and realm tracking.
+
+### Felmyst
+
+- Gas Nova: `45855`
+- Demonic Vapor: `45402`
+- Encapsulate: `45661`
+- Corrosion: `45866`
+- Key DBM/BW pattern: encapsulate handling, vapor target swaps, gas nova recovery, and air-phase timing.
+
+### The Eredar Twins
+
+- Pyrogenics: `45230`
+- Confounding Blow: `45256`
+- Shadow Blades: `45248`
+- Conflagration: `45342`
+- Shadow Nova: `45329`
+- Key DBM/BW pattern: threat tracking, debuff target handling, and repeated Shadow Nova / Conflagration cycles.
+
 ### M'uru
 
 - Darkness: `45996`
