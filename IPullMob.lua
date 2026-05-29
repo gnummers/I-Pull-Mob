@@ -113,6 +113,18 @@ local function GetDB()
 		db.rangeValue = nil
 	end
 
+	if type(db.breakPresetMinutes) ~= "number" then
+		db.breakPresetMinutes = 5
+	end
+
+	if type(db.soundPresets) ~= "table" then
+		db.soundPresets = {}
+	end
+
+	db.soundPresets.alert = NormalizeMediaKey(db.soundPresets.alert) or "alert"
+	db.soundPresets.pull = NormalizeMediaKey(db.soundPresets.pull) or "pull"
+	db.soundPresets.warning = NormalizeMediaKey(db.soundPresets.warning) or "warning"
+
 	return db
 end
 
@@ -149,10 +161,11 @@ local function PlayAlertSound()
 	if type(PlaySound) == "function" then
 		local alertSound = 8959
 		if type(_G.IPullMobSupport) == "table" then
+			local presetKey = db.soundPresets.alert or "alert"
 			if type(_G.IPullMobSupport.ResolveMedia) == "function" then
-				alertSound = _G.IPullMobSupport:ResolveMedia("sounds", "alert") or alertSound
+				alertSound = _G.IPullMobSupport:ResolveMedia("sounds", presetKey) or alertSound
 			elseif type(_G.IPullMobSupport.GetMedia) == "function" then
-				alertSound = _G.IPullMobSupport:GetMedia("sounds", "alert") or alertSound
+				alertSound = _G.IPullMobSupport:GetMedia("sounds", presetKey) or alertSound
 			end
 		end
 		PlaySound(alertSound, "Master")
@@ -214,6 +227,19 @@ local function NormalizeModuleId(id)
 	end
 
 	return id
+end
+
+local function NormalizeMediaKey(key)
+	if type(key) ~= "string" then
+		return nil
+	end
+
+	key = key:lower():gsub("^%s+", ""):gsub("%s+$", "")
+	if key == "" then
+		return nil
+	end
+
+	return key
 end
 
 local function NormalizeMarkerIcon(icon)
@@ -407,6 +433,7 @@ local state = {
 	encounterStart = nil,
 	encounterFinished = nil,
 	encounterFinishReason = nil,
+	rangeAutoHide = nil,
 }
 
 local function SetPrompt(text)
@@ -826,6 +853,7 @@ local function ClearEncounter(showComplete)
 	state.encounterStart = nil
 	state.encounterFinished = nil
 	state.encounterFinishReason = nil
+	state.rangeAutoHide = nil
 	SetPrompt("")
 	ClearBars()
 
@@ -1025,6 +1053,10 @@ local function MarkEncounterVictory(reason)
 	return true
 end
 
+local GetBreakPreset
+local SetBreakPreset
+local GetNextBreakPreset
+
 local function StartLeaderPull()
 	local started = StartEncounter("pull-timers")
 	if not started then
@@ -1047,7 +1079,10 @@ end
 local function StartBreakTimer(presetMinutes)
 	local encounterId = "break-timers"
 	if presetMinutes then
-		encounterId = string.format("break-%d", math.floor(tonumber(presetMinutes) or 0))
+		encounterId = string.format("break-%d", SetBreakPreset(presetMinutes))
+	else
+		local selected = tonumber(GetDB().breakPresetMinutes) or 5
+		encounterId = string.format("break-%d", SetBreakPreset(selected))
 	end
 
 	local started = StartEncounter(encounterId)
@@ -1058,7 +1093,7 @@ local function StartBreakTimer(presetMinutes)
 end
 
 local function CancelBreakTimer()
-	if type(state.encounterId) ~= "string" or not state.encounterId:match("^break") then
+	if type(state.encounterId) ~= "string" or not state.encounterId:match("^break%-") then
 		Print("No active break timer to cancel.")
 		return false
 	end
@@ -1068,7 +1103,57 @@ local function CancelBreakTimer()
 	return true
 end
 
-local function StartRangeHelper(rangeValue)
+GetBreakPreset = function()
+	local db = GetDB()
+	if type(db.breakPresetMinutes) ~= "number" then
+		db.breakPresetMinutes = 5
+	end
+
+	return db.breakPresetMinutes
+end
+
+SetBreakPreset = function(value)
+	local preset = tonumber(value) or 5
+	if preset < 5 then
+		preset = 5
+	elseif preset > 15 then
+		preset = 15
+	end
+
+	if preset < 8 then
+		preset = 5
+	elseif preset < 13 then
+		preset = 10
+	else
+		preset = 15
+	end
+
+	GetDB().breakPresetMinutes = preset
+	return preset
+end
+
+GetNextBreakPreset = function(delta)
+	local choices = { 5, 10, 15 }
+	local current = SetBreakPreset(GetBreakPreset())
+	local index = 1
+	for i, preset in ipairs(choices) do
+		if preset == current then
+			index = i
+			break
+		end
+	end
+
+	index = index + (delta or 1)
+	if index < 1 then
+		index = #choices
+	elseif index > #choices then
+		index = 1
+	end
+
+	return SetBreakPreset(choices[index])
+end
+
+local function StartRangeHelper(rangeValue, autoHide)
 	local normalizedRange = tonumber(rangeValue)
 	if not normalizedRange then
 		Print("Usage: /ipm range <yards> or /ipm range cancel")
@@ -1080,6 +1165,8 @@ local function StartRangeHelper(rangeValue)
 	local started = StartEncounter("range-helper")
 	if not started then
 		Print("Range helper module is unavailable.")
+	else
+		state.rangeAutoHide = autoHide and true or false
 	end
 	return started
 end
@@ -1125,6 +1212,78 @@ local function SetRangeValue(value)
 	return GetDB().rangeValue
 end
 
+local function GetSoundPreset(kind)
+	local db = GetDB()
+	local normalized = NormalizeMediaKey(kind)
+	if not normalized then
+		return nil
+	end
+
+	db.soundPresets[normalized] = NormalizeMediaKey(db.soundPresets[normalized]) or normalized
+	return db.soundPresets[normalized]
+end
+
+local function SetSoundPreset(kind, presetKey)
+	local db = GetDB()
+	local normalized = NormalizeMediaKey(kind)
+	if not normalized then
+		return nil
+	end
+
+	db.soundPresets[normalized] = NormalizeMediaKey(presetKey) or normalized
+	return db.soundPresets[normalized]
+end
+
+local function GetSoundPresetChoices()
+	return {
+		"alert",
+		"info",
+		"success",
+		"ready",
+		"kill",
+		"pull",
+		"warning",
+		"stack",
+		"stack now",
+		"spread",
+		"spread out",
+		"move",
+		"kite",
+		"dispel",
+		"phase2",
+		"phase2 soon",
+		"phase3",
+		"phase4",
+		"berserk",
+		"berserk soon",
+		"taunt",
+		"watchfeet",
+		"watch feet",
+		"stack soon",
+	}
+end
+
+local function GetNextSoundPreset(kind, delta)
+	local choices = GetSoundPresetChoices()
+	local current = GetSoundPreset(kind)
+	local index = 1
+	for i, key in ipairs(choices) do
+		if key == current then
+			index = i
+			break
+		end
+	end
+
+	index = index + (delta or 1)
+	if index < 1 then
+		index = #choices
+	elseif index > #choices then
+		index = 1
+	end
+
+	return SetSoundPreset(kind, choices[index])
+end
+
 local function GetPersistentPromptText(module)
 	if not module then
 		return nil
@@ -1164,6 +1323,7 @@ local function StartEncounter(encounterId)
 	state.encounterStart = GetTime()
 	state.encounterFinished = nil
 	state.encounterFinishReason = nil
+	state.rangeAutoHide = nil
 
 	if type(module.cycles) == "table" then
 		for cycleName, members in pairs(module.cycles) do
@@ -1344,7 +1504,7 @@ local function HandleSlash(msg)
 
 	local rangeValue = lower:match("^range%s+(%d+)$")
 	if rangeValue then
-		StartRangeHelper(rangeValue)
+		StartRangeHelper(rangeValue, true)
 		return
 	end
 
@@ -1831,7 +1991,7 @@ local function CreateOptionsWindow()
 		-10,
 		64,
 		function()
-			StartRangeHelper(GetDB().rangeValue or 8)
+			StartRangeHelper(GetDB().rangeValue or 8, false)
 		end
 	)
 
@@ -1849,8 +2009,65 @@ local function CreateOptionsWindow()
 		end
 	)
 
+	optionsFrame.soundPresetLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.soundPresetLabel:SetPoint("TOPLEFT", optionsFrame.rangeStartButton, "BOTTOMLEFT", 0, -14)
+	optionsFrame.soundPresetLabel:SetText("Alert Sound")
+
+	optionsFrame.soundPresetValue = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	optionsFrame.soundPresetValue:SetPoint("LEFT", optionsFrame.soundPresetLabel, "RIGHT", 8, 0)
+	optionsFrame.soundPresetValue:SetWidth(160)
+	optionsFrame.soundPresetValue:SetJustifyH("LEFT")
+
+	optionsFrame.soundPresetPrev = MakeButton(
+		"IPullMobSoundPresetPrevButton",
+		"<",
+		"TOPLEFT",
+		optionsFrame.soundPresetLabel,
+		"BOTTOMLEFT",
+		0,
+		-4,
+		28,
+	function()
+			GetNextSoundPreset("alert", -1)
+			if type(RefreshOptionsWindow) == "function" then
+				RefreshOptionsWindow()
+			end
+		end
+	)
+
+	optionsFrame.soundPresetNext = MakeButton(
+		"IPullMobSoundPresetNextButton",
+		">",
+		"LEFT",
+		optionsFrame.soundPresetPrev,
+		"RIGHT",
+		4,
+		0,
+		28,
+	function()
+			GetNextSoundPreset("alert", 1)
+			if type(RefreshOptionsWindow) == "function" then
+				RefreshOptionsWindow()
+			end
+		end
+	)
+
+	optionsFrame.soundPresetPreview = MakeButton(
+		"IPullMobSoundPresetPreviewButton",
+		"Preview",
+		"LEFT",
+		optionsFrame.soundPresetNext,
+		"RIGHT",
+		8,
+		0,
+		62,
+		function()
+			PlayAlertSound()
+		end
+	)
+
 	optionsFrame.leaderLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.leaderLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -240)
+	optionsFrame.leaderLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -265)
 	optionsFrame.leaderLabel:SetText("Leader Tools")
 
 	optionsFrame.pullButton = MakeButton(
@@ -1915,57 +2132,68 @@ local function CreateOptionsWindow()
 
 	optionsFrame.breakLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	optionsFrame.breakLabel:SetPoint("TOPLEFT", optionsFrame.summaryButton, "BOTTOMLEFT", 0, -12)
-	optionsFrame.breakLabel:SetText("Break Presets")
+	optionsFrame.breakLabel:SetText("Break Preset")
 
-	optionsFrame.break5Button = MakeButton(
-		"IPullMobBreak5Button",
-		"5m",
+	optionsFrame.breakPresetValue = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	optionsFrame.breakPresetValue:SetPoint("LEFT", optionsFrame.breakLabel, "RIGHT", 8, 0)
+	optionsFrame.breakPresetValue:SetWidth(100)
+	optionsFrame.breakPresetValue:SetJustifyH("LEFT")
+
+	optionsFrame.breakPresetPrev = MakeButton(
+		"IPullMobBreakPresetPrevButton",
+		"<",
 		"TOPLEFT",
 		optionsFrame.breakLabel,
 		"BOTTOMLEFT",
 		0,
-		-6,
-		52,
-		function()
-			StartBreakTimer(5)
+		-4,
+		28,
+	function()
+			GetNextBreakPreset(-1)
+			if type(RefreshOptionsWindow) == "function" then
+				RefreshOptionsWindow()
+			end
 		end
 	)
 
-	optionsFrame.break10Button = MakeButton(
-		"IPullMobBreak10Button",
-		"10m",
+	optionsFrame.breakPresetNext = MakeButton(
+		"IPullMobBreakPresetNextButton",
+		">",
 		"LEFT",
-		optionsFrame.break5Button,
+		optionsFrame.breakPresetPrev,
 		"RIGHT",
-		6,
+		4,
+		0,
+		28,
+	function()
+			GetNextBreakPreset(1)
+			if type(RefreshOptionsWindow) == "function" then
+				RefreshOptionsWindow()
+			end
+		end
+	)
+
+	optionsFrame.breakPresetStart = MakeButton(
+		"IPullMobBreakPresetStartButton",
+		"Start",
+		"LEFT",
+		optionsFrame.breakPresetNext,
+		"RIGHT",
+		8,
 		0,
 		52,
 		function()
-			StartBreakTimer(10)
+			StartBreakTimer(GetBreakPreset())
 		end
 	)
 
-	optionsFrame.break15Button = MakeButton(
-		"IPullMobBreak15Button",
-		"15m",
-		"LEFT",
-		optionsFrame.break10Button,
-		"RIGHT",
-		6,
-		0,
-		52,
-		function()
-			StartBreakTimer(15)
-		end
-	)
-
-	optionsFrame.breakCancelButton = MakeButton(
-		"IPullMobBreakCancelButton",
+	optionsFrame.breakPresetCancel = MakeButton(
+		"IPullMobBreakPresetCancelButton",
 		"Cancel",
 		"LEFT",
-		optionsFrame.break15Button,
+		optionsFrame.breakPresetStart,
 		"RIGHT",
-		6,
+		8,
 		0,
 		66,
 		function()
@@ -1977,14 +2205,14 @@ local function CreateOptionsWindow()
 	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.summaryButton, "RIGHT", 12, 0)
 	optionsFrame.toolsHint:SetWidth(250)
 	optionsFrame.toolsHint:SetJustifyH("LEFT")
-	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, manage range, cancel timers, and save kill times.")
+	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, manage range, preview sounds, and save kill times.")
 
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -370)
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -395)
 	optionsFrame.modulesLabel:SetText("Modules")
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", 14, -394)
+	scrollFrame:SetPoint("TOPLEFT", 14, -419)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -214, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)
@@ -2007,6 +2235,8 @@ local function CreateOptionsWindow()
 		optionsFrame.scaleSlider:Refresh()
 		optionsFrame.volumeSlider:Refresh()
 		optionsFrame.rangeSlider:Refresh()
+		optionsFrame.soundPresetValue:SetText(GetSoundPreset("alert") or "alert")
+		optionsFrame.breakPresetValue:SetText(string.format("%dm", GetBreakPreset()))
 		optionsFrame.reportText:SetText(BuildKillSummaryText(GetReportModuleId()))
 		optionsFrame.reportLabel:SetText(string.format("Post-Fight Report: %s", (function()
 			local id = GetReportModuleId()
@@ -2111,7 +2341,13 @@ local function RegisterEventHandlers()
 
 		if event == "PLAYER_REGEN_ENABLED" then
 			if state.encounterId then
-				if state.module and state.module.persistentPrompt then
+				if state.module and state.module.id == "range-helper" then
+					if state.rangeAutoHide then
+						ClearEncounter(false)
+					else
+						Fojiji:Show()
+					end
+				elseif state.module and state.module.persistentPrompt then
 					if GetDB().autoShow then
 						Fojiji:Show()
 					else

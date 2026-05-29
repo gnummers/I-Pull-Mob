@@ -130,6 +130,8 @@ These cover the full boss list for Phase 1 through Phase 4 TBC raid content in t
 
 Note: `kara-chess` and `kara-opera` are special Karazhan event encounters. They finish through encounter-end tracking rather than a normal single-boss death, so the addon handles them with dedicated event-completion logic.
 
+Note: the range helper auto-hides when started from `/ipm range`, but stays visible if you launch it from the options window.
+
 ## Module Model
 
 Each raid module can define:
@@ -156,6 +158,7 @@ Use `/ipm options` to open the configuration window. From there you can:
 - adjust the range helper yard value
 - start or cancel the range helper from the options window
 - launch preset break timers from the options window
+- select and preview the alert sound alias from the options window
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
 - use leader tools buttons for pull countdowns, ready checks, and kill recording
