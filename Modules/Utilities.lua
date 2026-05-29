@@ -3,6 +3,34 @@ if not IPM then
 	return
 end
 
+local function BuildBreakTimeline(minutes)
+	local totalSeconds = math.max(60, math.floor((tonumber(minutes) or 0) * 60))
+	local timeline = {}
+	local marks = {
+		240,
+		180,
+		120,
+		60,
+		30,
+		10,
+		5,
+		1,
+	}
+
+	for _, remaining in ipairs(marks) do
+		if remaining < totalSeconds then
+			table.insert(timeline, {
+				after = totalSeconds - remaining,
+				label = string.format("Break %d", remaining >= 60 and remaining / 60 or remaining),
+				prompt = remaining >= 60 and string.format("Break ends in %d minutes", remaining / 60) or string.format("Break ends in %d seconds", remaining),
+				sound = true,
+			})
+		end
+	end
+
+	return timeline
+end
+
 IPM:RegisterModule("pull-timers", {
 	name = "Utility - Pull Timers",
 	description = "A simple pull countdown module for raid starts and sync checks.",
@@ -29,6 +57,18 @@ IPM:RegisterModule("break-timers", {
 		{ after = 299, label = "Break 1", prompt = "Break ends in 1 second", sound = true },
 	},
 })
+
+local function RegisterBreakPreset(id, minutes)
+	IPM:RegisterModule(id, {
+		name = string.format("Utility - Break %d Minutes", minutes),
+		description = string.format("A break countdown preset for a %d-minute raid pause.", minutes),
+		timeline = BuildBreakTimeline(minutes),
+	})
+end
+
+RegisterBreakPreset("break-5", 5)
+RegisterBreakPreset("break-10", 10)
+RegisterBreakPreset("break-15", 15)
 
 IPM:RegisterModule("range-helper", {
 	name = "Utility - Range Helper",

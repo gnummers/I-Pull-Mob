@@ -1044,8 +1044,13 @@ local function CancelLeaderPull()
 	return true
 end
 
-local function StartBreakTimer()
-	local started = StartEncounter("break-timers")
+local function StartBreakTimer(presetMinutes)
+	local encounterId = "break-timers"
+	if presetMinutes then
+		encounterId = string.format("break-%d", math.floor(tonumber(presetMinutes) or 0))
+	end
+
+	local started = StartEncounter(encounterId)
 	if not started then
 		Print("Break timer module is unavailable.")
 	end
@@ -1053,7 +1058,7 @@ local function StartBreakTimer()
 end
 
 local function CancelBreakTimer()
-	if state.encounterId ~= "break-timers" then
+	if type(state.encounterId) ~= "string" or not state.encounterId:match("^break") then
 		Print("No active break timer to cancel.")
 		return false
 	end
@@ -1289,7 +1294,7 @@ local function ListCycles()
 end
 
 local function ShowHelp()
-	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm pull cancel, /ipm break, /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
+	Print("Commands: /ipm demo, /ipm start <module>, /ipm stop, /ipm kill, /ipm modules, /ipm cycles, /ipm options, /ipm pull, /ipm pull cancel, /ipm break [minutes], /ipm break cancel, /ipm range <yards>, /ipm range cancel, /ipm ready, /ipm summary [module], /ipm enable <module>, /ipm disable <module>, /ipm cycle <name> add <player>, /ipm cycle <name> list, /ipm cycle <name> next, /ipm sound on|off, /ipm lock, /ipm unlock")
 end
 
 local function HandleSlash(msg)
@@ -1318,6 +1323,12 @@ local function HandleSlash(msg)
 
 	if lower == "break" then
 		StartBreakTimer()
+		return
+	end
+
+	local breakMinutes = lower:match("^break%s+(%d+)$")
+	if breakMinutes then
+		StartBreakTimer(breakMinutes)
 		return
 	end
 
@@ -1810,6 +1821,34 @@ local function CreateOptionsWindow()
 		return button
 	end
 
+	optionsFrame.rangeStartButton = MakeButton(
+		"IPullMobRangeStartButton",
+		"Start",
+		"TOPLEFT",
+		optionsFrame.rangeSlider,
+		"BOTTOMLEFT",
+		0,
+		-10,
+		64,
+		function()
+			StartRangeHelper(GetDB().rangeValue or 8)
+		end
+	)
+
+	optionsFrame.rangeCancelButton = MakeButton(
+		"IPullMobRangeCancelButton",
+		"Cancel",
+		"LEFT",
+		optionsFrame.rangeStartButton,
+		"RIGHT",
+		8,
+		0,
+		64,
+		function()
+			CancelRangeHelper()
+		end
+	)
+
 	optionsFrame.leaderLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	optionsFrame.leaderLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -240)
 	optionsFrame.leaderLabel:SetText("Leader Tools")
@@ -1870,7 +1909,67 @@ local function CreateOptionsWindow()
 				PrintKillSummary(state.encounterId)
 			else
 				Print("No active encounter selected.")
-			end
+		end
+	end
+	)
+
+	optionsFrame.breakLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	optionsFrame.breakLabel:SetPoint("TOPLEFT", optionsFrame.summaryButton, "BOTTOMLEFT", 0, -12)
+	optionsFrame.breakLabel:SetText("Break Presets")
+
+	optionsFrame.break5Button = MakeButton(
+		"IPullMobBreak5Button",
+		"5m",
+		"TOPLEFT",
+		optionsFrame.breakLabel,
+		"BOTTOMLEFT",
+		0,
+		-6,
+		52,
+		function()
+			StartBreakTimer(5)
+		end
+	)
+
+	optionsFrame.break10Button = MakeButton(
+		"IPullMobBreak10Button",
+		"10m",
+		"LEFT",
+		optionsFrame.break5Button,
+		"RIGHT",
+		6,
+		0,
+		52,
+		function()
+			StartBreakTimer(10)
+		end
+	)
+
+	optionsFrame.break15Button = MakeButton(
+		"IPullMobBreak15Button",
+		"15m",
+		"LEFT",
+		optionsFrame.break10Button,
+		"RIGHT",
+		6,
+		0,
+		52,
+		function()
+			StartBreakTimer(15)
+		end
+	)
+
+	optionsFrame.breakCancelButton = MakeButton(
+		"IPullMobBreakCancelButton",
+		"Cancel",
+		"LEFT",
+		optionsFrame.break15Button,
+		"RIGHT",
+		6,
+		0,
+		66,
+		function()
+			CancelBreakTimer()
 		end
 	)
 
@@ -1878,14 +1977,14 @@ local function CreateOptionsWindow()
 	optionsFrame.toolsHint:SetPoint("LEFT", optionsFrame.summaryButton, "RIGHT", 12, 0)
 	optionsFrame.toolsHint:SetWidth(250)
 	optionsFrame.toolsHint:SetJustifyH("LEFT")
-	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, cancel timers, and save kill times.")
+	optionsFrame.toolsHint:SetText("Use these buttons to coordinate pulls, manage range, cancel timers, and save kill times.")
 
 	optionsFrame.modulesLabel = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -310)
+	optionsFrame.modulesLabel:SetPoint("TOPLEFT", optionsFrame, "TOPLEFT", 16, -370)
 	optionsFrame.modulesLabel:SetText("Modules")
 
 	local scrollFrame = CreateFrame("ScrollFrame", "IPullMobOptionsScrollFrame", optionsFrame, "UIPanelScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", 14, -334)
+	scrollFrame:SetPoint("TOPLEFT", 14, -394)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -214, 14)
 
 	local content = CreateFrame("Frame", nil, scrollFrame)

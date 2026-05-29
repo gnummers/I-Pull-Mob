@@ -37,6 +37,7 @@ It is intentionally structured like a lightweight encounter framework:
 - `/ipm pull` - start the pull countdown module
 - `/ipm pull cancel` - cancel the pull countdown
 - `/ipm break` - start the break countdown module
+- `/ipm break <minutes>` - start a break preset such as 5, 10, or 15 minutes
 - `/ipm break cancel` - cancel the break countdown
 - `/ipm range <yards>` - start the minimal range helper
 - `/ipm range cancel` - clear the range helper
@@ -75,6 +76,7 @@ The addon ships with starter modules:
 - `magtheridons-lair` - Magtheridon, with Blast Nova cube rotations and a Quake reminder
 - `pull-timers` - a simple pull countdown module
 - `break-timers` - a fixed break countdown module
+- `break-5`, `break-10`, `break-15` - break countdown presets
 - `range-helper` - a minimal range reminder
 - `reminder-popups` - generic pre-pull or mid-raid reminder prompts
 - `taunt-alerter` - generic tank swap reminders
@@ -152,6 +154,8 @@ Use `/ipm options` to open the configuration window. From there you can:
 - adjust the frame scale
 - adjust the alert volume used for addon sounds
 - adjust the range helper yard value
+- start or cancel the range helper from the options window
+- launch preset break timers from the options window
 - enable or disable any registered module
 - keep utility modules disabled when you do not want them loaded for a night
 - use leader tools buttons for pull countdowns, ready checks, and kill recording
