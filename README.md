@@ -117,6 +117,8 @@ The addon ships with starter modules:
 
 These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon, plus a starter Sunwell import pass for the full Sunwell raid roster.
 
+Note: `kara-chess` and `kara-opera` are special Karazhan event encounters. They remain manual-recording edge cases for kill history because the installed DBM and BigWigs sources treat them as shared/special-event encounters rather than a normal single-boss death.
+
 ## Module Model
 
 Each raid module can define:

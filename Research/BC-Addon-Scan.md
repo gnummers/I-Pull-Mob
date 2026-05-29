@@ -99,6 +99,12 @@ This note captures the highest-value timer and mechanic data extracted from the 
 - The wave helper uses boss-specific cadence tables, with common timings around 125, 135, 160, 165, 195, and 225 seconds depending on wave and boss.
 - It also provides a detailed wave composition mapping for Rage Winterchill, Anetheron, Kaz'rogal, and Azgalor.
 
+### Karazhan Shared Encounters
+
+- `Chess` has a DBM encounter ID, but it is still a special event with shared behavior rather than a normal boss kill.
+- `Romulo and Julianne` and `Wizard of Oz` are treated as shared Karazhan event modules in both DBM and BigWigs, which is why they are poor candidates for naïve `bossIds` kill recording.
+- Practical takeaway: keep Karazhan `Opera` and `Chess` as manual kill-history entries unless you build event-specific completion logic.
+
 ## Practical Takeaways for I Pull Mob
 
 - Use DBM/BigWigs spell IDs for combat log triggers whenever possible.
