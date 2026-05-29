@@ -18,7 +18,7 @@ It is intentionally structured like a lightweight encounter framework:
 - Interrupt cycle tracking and rotation advancement
 - Slash-command driven testing
 - In-game options window for enabling and disabling modules
-- Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster
+- Starter raid modules for the full Phase 1 through Phase 4 TBC raid roster, plus a starter Sunwell import pass
 
 ## Slash Commands
 
@@ -94,11 +94,14 @@ The addon ships with starter modules:
 - `tk-alar` - Al'ar
 - `tk-solarian` - High Astromancer Solarian
 - `tk-kaelthas` - Kael'thas Sunstrider
+- `sw-brutallus` - Brutallus
+- `sw-muru` - M'uru
+- `sw-kiljaeden` - Kil'jaeden
 - `prepull-checklist` - a short pre-pull readiness checklist
 - `raid-cooldowns` - generic raid cooldown reminders
 - `mana-reminders` - mana check and potion prompts
 
-These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon.
+These cover the full boss list for Phase 1 through Phase 4 TBC raid content in this addon, plus a starter Sunwell import pass for the highest-value boss timers.
 
 ## Module Model
 
@@ -136,7 +139,8 @@ Disabled modules remain registered, but `/ipm start <module>` will refuse to lau
 - Saved variables: `IPullMobDB`
 - Main file: `IPullMob.lua`
 - Encounter modules: `Modules\*.lua`
+- Research notes: `Research\*.md`
 
 ## Next Step
 
-Add real boss modules for the raids you care about, then tune the prompts and interrupt rotations for each fight.
+Add the remaining Sunwell bosses, then tighten the imported timing windows with pull logs.
